@@ -3,9 +3,9 @@ import subprocess
 
 import lionscliapp as app
 
-from executionsatellite import __version__
-from executionsatellite import core
-from executionsatellite import ui
+from input_replay_satellite import __version__
+from input_replay_satellite import core
+from input_replay_satellite import ui
 
 
 def cmd_open():
@@ -85,13 +85,13 @@ def cmd_doctor():
         raise SystemExit(f"Leonardo expected output already exists: {generated}")
     print(f"Launch folder: {staging}")
     print(f"Leonardo save folder: {save_folder}")
-    print("Execution Satellite preflight passed.")
+    print("Input Replay Satellite preflight passed.")
 
 
 def declare():
-    app.declare_app("execution-satellite", __version__)
+    app.declare_app("input-replay-satellite", __version__)
     app.describe_app("Human-gated InputLog executor for StickerDB production jobs.")
-    app.declare_projectdir(".execution-satellite")
+    app.declare_projectdir(".input-replay-satellite")
     app.set_flag("search_upwards_for_project_dir", True)
 
     app.declare_key("projpath.inbox", "inbox/")

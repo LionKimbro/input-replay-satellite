@@ -14,4 +14,4 @@ venv/
 .pycard/
 .zookeep/
 zookeeper-report.json
-.execution-satellite/
+.input-replay-satellite/

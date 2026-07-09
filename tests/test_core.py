@@ -5,7 +5,7 @@ from types import SimpleNamespace
 
 import pytest
 
-from executionsatellite import core
+from input_replay_satellite import core
 
 
 def make_request(tmp_path, job="layout_sticker_to_lds"):

@@ -1,10 +1,10 @@
 {
 "document": {
-"document-id": "stickerdb.execution-satellite.protocol.softspec.v1",
-"title": "StickerDB Execution Satellite Communication Protocol SoftSpec",
+"document-id": "stickerdb.input-replay-satellite.protocol.softspec.v1",
+"title": "StickerDB Input Replay Satellite Communication Protocol SoftSpec",
 "tags": [
 "stickerdb",
-"execution-satellite",
+"input-replay-satellite",
 "softspec",
 "json",
 "protocol",
@@ -12,18 +12,20 @@
 "response",
 "job-cell"
 ],
-"purpose": "Describe the JSON request and response protocol used between StickerDB and an execution satellite.",
+"purpose": "Describe the JSON request and response protocol used between StickerDB and an input replay satellite.",
 "author": [
 "Lion Kimbro",
 "Wing-Cat"
 ],
-"status": "draft",
-"created": "2026-06-19"
+"status": "solid-v1-implementation-current",
+"created": "2026-06-19",
+"updated": "2026-07-09"
 },
 
 "overview": {
-"description": "This protocol lets StickerDB request work from an execution satellite by writing JSON request files. The request includes full paths for inputs, outputs, expiration, and response callback. The execution satellite performs the requested job when the operator runs it, then writes a response JSON file to the request's response_path.",
-"style": "SoftSpec: descriptive over rigid validation. This document describes the intended meanings and structures, while allowing the protocol to evolve."
+"description": "This protocol lets StickerDB request work from an input replay satellite by writing JSON request files. The request includes full paths for inputs, outputs, expiration, and response callback. The input replay satellite performs the requested job when the operator runs it, then writes a response JSON file to the request's response_path.",
+"style": "SoftSpec: descriptive over rigid validation. This document describes the intended meanings and structures.",
+"versioning": "This is the solid v1 protocol document for the current implementation. Future protocol changes should be made as a .v2 document rather than mutating this v1 contract."
 },
 
 "v1-jobs": {
@@ -59,7 +61,7 @@
 "The satellite may write requester-specified output paths.",
 "The satellite writes response JSON to response_path.",
 "The satellite does not delete requester-owned files.",
-"After expires_at, the satellite may drop or ignore the job from its own side.",
+"After expires_at, the satellite may drop or ignore the job from its own side; the current v1 implementation displays already-expired inbox requests as expired and does not write an expired response merely because such a request was discovered.",
 "On interruption or abnormal InputLog result, the satellite stops the queue and waits for operator decision."
 ],
 
@@ -70,8 +72,8 @@
 "semantic_type": "schema-id",
 "description": "Identifies the protocol schema used by a JSON document.",
 "examples": [
-"stickerdb.execution_satellite.request.v1",
-"stickerdb.execution_satellite.response.v1"
+"stickerdb.input_replay_satellite.request.v1",
+"stickerdb.input_replay_satellite.response.v1"
 ]
 },
 
@@ -91,7 +93,7 @@
 
   "job-name": {
     "type": "string",
-    "semantic_type": "execution-satellite-job-name",
+    "semantic_type": "input-replay-satellite-job-name",
     "description": "The named operation the satellite should perform.",
     "vocabulary_mode": "closed-for-v1",
     "vocabulary": {
@@ -132,7 +134,6 @@
     "vocabulary": {
       "done": "The satellite completed the job normally according to what it can observe.",
       "failed": "The job did not complete and should be treated as failed.",
-      "expired": "The satellite considered the job too old to run.",
       "interrupted": "Execution was interrupted, usually by user mouse or keyboard activity."
     }
   },
@@ -142,8 +143,14 @@
     "semantic_type": "error-kind",
     "description": "A short machine-readable description of the failure or abnormal condition.",
     "examples": [
-      "inputlog_interrupted",
-      "expired",
+      "user_aborted",
+      "inputlog_report_error",
+      "inputlog_exit_error",
+      "inputlog_error",
+      "inputlog_launch_error",
+      "job_adapter_error",
+      "operator_failed",
+      "queue_failed",
       "missing_input_file",
       "output_write_failed",
       "unknown_job"
@@ -153,8 +160,8 @@
 
 "schemas": {
   "request": {
-    "title": "Execution Satellite Request",
-    "description": "A JSON object written by the requester to ask an execution satellite to perform a job.",
+    "title": "Input Replay Satellite Request",
+    "description": "A JSON object written by the requester to ask an input replay satellite to perform a job.",
     "rules": [
       "The requester owns the request file.",
       "The request must include response_path.",
@@ -170,7 +177,7 @@
           "required": true,
           "description": "Protocol schema for this request.",
           "examples": [
-            "stickerdb.execution_satellite.request.v1"
+            "stickerdb.input_replay_satellite.request.v1"
           ]
         },
 
@@ -347,11 +354,13 @@
   },
 
   "response": {
-    "title": "Execution Satellite Response",
-    "description": "A JSON object written by the execution satellite to response_path after job completion, expiration, interruption resolution, or failure.",
+    "title": "Input Replay Satellite Response",
+    "description": "A JSON object written by the input replay satellite to response_path after job completion, expiration, interruption resolution, or failure.",
     "rules": [
       "The response should report what the satellite actually knows.",
       "A normal InputLog completion does not prove that a physical print is correct.",
+      "The current v1 implementation produces response status values done, failed, and interrupted.",
+      "The current v1 implementation does not write an expired response merely when an already-expired inbox request is discovered.",
       "The response should be written to the request's response_path.",
       "The satellite may also keep its own copy of the response in satellite-owned records."
     ],
@@ -362,7 +371,7 @@
           "type": "schema-id",
           "required": true,
           "examples": [
-            "stickerdb.execution_satellite.response.v1"
+            "stickerdb.input_replay_satellite.response.v1"
           ]
         },
 
@@ -445,7 +454,7 @@
 
 "examples": {
 "layout-sticker-to-lds-request": {
-"schema": "stickerdb.execution_satellite.request.v1",
+"schema": "stickerdb.input_replay_satellite.request.v1",
 "job_id": "job-ed3fa723",
 "job": "layout_sticker_to_lds",
 "created_at": "2026-06-19T08:50:00-07:00",
@@ -460,12 +469,12 @@
 },
 
 "layout-sticker-to-lds-success-response": {
-  "schema": "stickerdb.execution_satellite.response.v1",
+  "schema": "stickerdb.input_replay_satellite.response.v1",
   "job_id": "job-ed3fa723",
   "job": "layout_sticker_to_lds",
   "ok": true,
   "status": "done",
-  "message": "Created LDS file.",
+  "message": "InputLog completed normally and the requested LDS file exists.",
   "started_at": "2026-06-19T09:01:00-07:00",
   "finished_at": "2026-06-19T09:01:42-07:00",
   "outputs": {
@@ -478,7 +487,7 @@
 },
 
 "print-lds-file-request": {
-  "schema": "stickerdb.execution_satellite.request.v1",
+  "schema": "stickerdb.input_replay_satellite.request.v1",
   "job_id": "job-a18bd442",
   "job": "print_lds_file",
   "created_at": "2026-06-19T09:10:00-07:00",
@@ -490,12 +499,12 @@
 },
 
 "print-lds-file-success-response": {
-  "schema": "stickerdb.execution_satellite.response.v1",
+  "schema": "stickerdb.input_replay_satellite.response.v1",
   "job_id": "job-a18bd442",
   "job": "print_lds_file",
   "ok": true,
   "status": "done",
-  "message": "InputLog completed the LDS print script normally.",
+  "message": "InputLog completed the LDS print recording normally.",
   "started_at": "2026-06-19T09:12:00-07:00",
   "finished_at": "2026-06-19T09:13:15-07:00",
   "outputs": {},
@@ -507,18 +516,19 @@
 },
 
 "interrupted-response": {
-  "schema": "stickerdb.execution_satellite.response.v1",
+  "schema": "stickerdb.input_replay_satellite.response.v1",
   "job_id": "job-a18bd442",
   "job": "print_lds_file",
   "ok": false,
   "status": "interrupted",
-  "message": "InputLog playback was interrupted. The queue was stopped.",
+  "message": "InputLog playback was interrupted at event index 9.",
   "started_at": "2026-06-19T09:12:00-07:00",
   "finished_at": "2026-06-19T09:12:08-07:00",
   "outputs": {},
   "error": {
-    "kind": "inputlog_interrupted",
-    "message": "InputLog reported interruption during playback."
+    "kind": "user_aborted",
+    "message": "InputLog playback was interrupted at event index 9.",
+    "source-type": "InputLogInterrupted"
   },
   "observations": [
     "No further jobs were run after the interruption.",

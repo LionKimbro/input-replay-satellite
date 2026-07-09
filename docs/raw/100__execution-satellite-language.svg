@@ -1,0 +1,348 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!-- Created with Inkscape (http://www.inkscape.org/) -->
+
+<svg
+   width="8.5in"
+   height="11in"
+   viewBox="0 0 215.9 279.4"
+   version="1.1"
+   id="svg1"
+   inkscape:version="1.4.4 (dcaf3e7, 2026-05-05)"
+   sodipodi:docname="drawing.svg"
+   xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
+   xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
+   xmlns="http://www.w3.org/2000/svg"
+   xmlns:svg="http://www.w3.org/2000/svg">
+  <sodipodi:namedview
+     id="namedview1"
+     pagecolor="#cacaca"
+     bordercolor="#ffffff"
+     borderopacity="1"
+     inkscape:showpageshadow="0"
+     inkscape:pageopacity="0"
+     inkscape:pagecheckerboard="0"
+     inkscape:deskcolor="#505050"
+     inkscape:document-units="mm"
+     showgrid="true"
+     inkscape:zoom="0.76420455"
+     inkscape:cx="583.61338"
+     inkscape:cy="439.01859"
+     inkscape:window-width="1920"
+     inkscape:window-height="1009"
+     inkscape:window-x="-8"
+     inkscape:window-y="-8"
+     inkscape:window-maximized="1"
+     inkscape:current-layer="layer1" />
+  <defs
+     id="defs1" />
+  <g
+     inkscape:label="Layer 1"
+     inkscape:groupmode="layer"
+     id="layer1">
+    <g
+       id="g33"
+       transform="translate(0,-2.116668)">
+      <g
+         id="g27"
+         transform="translate(132.20512,-24.758711)">
+        <text
+           xml:space="preserve"
+           style="font-size:4.23333px;line-height:normal;font-family:'Anonymous Pro';-inkscape-font-specification:'Anonymous Pro, Normal';text-decoration-color:#000000;writing-mode:lr-tb;direction:ltr;fill:#000000;stroke-width:0.264583"
+           x="8.1159801"
+           y="87.864349"
+           id="text1"><tspan
+             sodipodi:role="line"
+             id="tspan1"
+             style="stroke-width:0.264583"
+             x="8.1159801"
+             y="87.864349">Execution</tspan><tspan
+             sodipodi:role="line"
+             style="stroke-width:0.264583"
+             x="8.1159801"
+             y="93.156013"
+             id="tspan2">Satellite</tspan></text>
+        <text
+           xml:space="preserve"
+           style="font-size:3.175px;line-height:normal;font-family:'Anonymous Pro';-inkscape-font-specification:'Anonymous Pro, Normal';text-decoration-color:#000000;writing-mode:lr-tb;direction:ltr;fill:#000000;stroke-width:0.264583"
+           x="14.570366"
+           y="98.172493"
+           id="text6"><tspan
+             sodipodi:role="line"
+             id="tspan6"
+             style="font-style:italic;font-size:3.175px;stroke-width:0.264583"
+             x="14.570366"
+             y="98.172493">Generic out-of-process executor.</tspan></text>
+      </g>
+      <g
+         id="g28"
+         transform="translate(16.221221,27.500929)">
+        <text
+           xml:space="preserve"
+           style="font-size:4.23333px;line-height:normal;font-family:'Anonymous Pro';-inkscape-font-specification:'Anonymous Pro, Normal';text-decoration-color:#000000;writing-mode:lr-tb;direction:ltr;fill:#000000;stroke-width:0.264583"
+           x="124.09987"
+           y="58.337246"
+           id="text3"><tspan
+             sodipodi:role="line"
+             id="tspan3"
+             style="stroke-width:0.264583"
+             x="124.09987"
+             y="58.337246">Input Replay</tspan><tspan
+             sodipodi:role="line"
+             style="stroke-width:0.264583"
+             x="124.09987"
+             y="63.628906"
+             id="tspan4">Execution</tspan><tspan
+             sodipodi:role="line"
+             style="stroke-width:0.264583"
+             x="124.09987"
+             y="68.92057"
+             id="tspan5">Satellite</tspan></text>
+        <text
+           xml:space="preserve"
+           style="font-size:3.175px;line-height:normal;font-family:'Anonymous Pro';-inkscape-font-specification:'Anonymous Pro, Normal';text-decoration-color:#000000;writing-mode:lr-tb;direction:ltr;fill:#000000;stroke-width:0.264583"
+           x="130.65347"
+           y="73.93705"
+           id="text7"><tspan
+             sodipodi:role="line"
+             id="tspan7"
+             style="font-style:italic;font-size:3.175px;stroke-width:0.264583"
+             x="130.65347"
+             y="73.93705">Specialized execution satellite</tspan><tspan
+             sodipodi:role="line"
+             style="font-style:italic;font-size:3.175px;stroke-width:0.264583"
+             x="130.65347"
+             y="77.9058"
+             id="tspan8">for GUI/mouse/keyboard replay jobs.</tspan></text>
+      </g>
+    </g>
+    <g
+       id="g34">
+      <g
+         id="g26"
+         transform="translate(6.3500003,-67.092065)">
+        <text
+           xml:space="preserve"
+           style="font-size:4.23333px;line-height:normal;font-family:'Anonymous Pro';-inkscape-font-specification:'Anonymous Pro, Normal';text-decoration-color:#000000;writing-mode:lr-tb;direction:ltr;fill:#000000;stroke-width:0.264583"
+           x="8.1717911"
+           y="128.12651"
+           id="text9"><tspan
+             sodipodi:role="line"
+             id="tspan9"
+             style="stroke-width:0.264583"
+             x="8.1717911"
+             y="128.12651">Job Coordinator</tspan><tspan
+             sodipodi:role="line"
+             style="stroke-width:0.264583"
+             x="8.1717911"
+             y="133.41817"
+             id="tspan10">Thread</tspan></text>
+        <text
+           xml:space="preserve"
+           style="font-size:3.175px;line-height:normal;font-family:'Anonymous Pro';-inkscape-font-specification:'Anonymous Pro, Normal';text-decoration-color:#000000;writing-mode:lr-tb;direction:ltr;fill:#000000;stroke-width:0.264583"
+           x="14.672686"
+           y="138.35507"
+           id="text11"><tspan
+             sodipodi:role="line"
+             id="tspan11"
+             style="font-style:italic;font-size:3.175px;stroke-width:0.264583"
+             x="14.672686"
+             y="138.35507">In-process worker thread that prepares jobs,</tspan><tspan
+             sodipodi:role="line"
+             style="font-style:italic;font-size:3.175px;stroke-width:0.264583"
+             x="14.672686"
+             y="142.32382"
+             id="tspan12">launches or contacts satellites, watches job progress,</tspan><tspan
+             sodipodi:role="line"
+             style="font-style:italic;font-size:3.175px;stroke-width:0.264583"
+             x="14.672686"
+             y="146.29257"
+             id="tspan15">and reports updates back to the Tkinter thread.</tspan><tspan
+             sodipodi:role="line"
+             style="font-style:italic;font-size:3.175px;stroke-width:0.264583"
+             x="14.672686"
+             y="150.26132"
+             id="tspan13" /></text>
+      </g>
+      <g
+         id="g25"
+         transform="translate(6.3500003,-39.158336)">
+        <text
+           xml:space="preserve"
+           style="font-size:3.175px;line-height:normal;font-family:'Anonymous Pro';-inkscape-font-specification:'Anonymous Pro, Normal';text-decoration-color:#000000;writing-mode:lr-tb;direction:ltr;fill:#000000;stroke-width:0.264583"
+           x="14.59362"
+           y="138.43103"
+           id="text11-3-7"><tspan
+             sodipodi:role="line"
+             style="font-style:italic;font-size:3.175px;stroke-width:0.264583"
+             x="14.59362"
+             y="138.43103"
+             id="tspan19">Immutable in-process captured intent from the UI/database,</tspan><tspan
+             sodipodi:role="line"
+             style="font-style:italic;font-size:3.175px;stroke-width:0.264583"
+             x="14.59362"
+             y="142.39978"
+             id="tspan20">created by the Tkinter thread.</tspan></text>
+        <text
+           xml:space="preserve"
+           style="font-size:4.23333px;line-height:normal;font-family:'Anonymous Pro';-inkscape-font-specification:'Anonymous Pro, Normal';text-decoration-color:#000000;writing-mode:lr-tb;direction:ltr;fill:#000000;stroke-width:0.264583"
+           x="8.1717911"
+           y="132.6947"
+           id="text9-7"><tspan
+             sodipodi:role="line"
+             style="stroke-width:0.264583"
+             x="8.1717911"
+             y="132.6947"
+             id="tspan10-1">Job Request</tspan></text>
+      </g>
+      <g
+         id="g24"
+         transform="translate(6.3500003,-19.579162)">
+        <text
+           xml:space="preserve"
+           style="font-size:3.175px;line-height:normal;font-family:'Anonymous Pro';-inkscape-font-specification:'Anonymous Pro, Normal';text-decoration-color:#000000;writing-mode:lr-tb;direction:ltr;fill:#000000;stroke-width:0.264583"
+           x="14.599821"
+           y="138.43103"
+           id="text11-3-7-8"><tspan
+             sodipodi:role="line"
+             style="font-style:italic;font-size:3.175px;stroke-width:0.264583"
+             x="14.599821"
+             y="138.43103"
+             id="tspan20-5">Immutable in-process status/completion/failure report sent from the</tspan><tspan
+             sodipodi:role="line"
+             style="font-style:italic;font-size:3.175px;stroke-width:0.264583"
+             x="14.599821"
+             y="142.39978"
+             id="tspan21">Job Coordinator Thread to the Tkinter thread.</tspan></text>
+        <text
+           xml:space="preserve"
+           style="font-size:4.23333px;line-height:normal;font-family:'Anonymous Pro';-inkscape-font-specification:'Anonymous Pro, Normal';text-decoration-color:#000000;writing-mode:lr-tb;direction:ltr;fill:#000000;stroke-width:0.264583"
+           x="8.1717911"
+           y="132.6947"
+           id="text9-2"><tspan
+             sodipodi:role="line"
+             style="stroke-width:0.264583"
+             x="8.1717911"
+             y="132.6947"
+             id="tspan10-6">Job Update</tspan></text>
+      </g>
+    </g>
+    <g
+       id="g35"
+       transform="translate(-7.6168526,6.5781909)">
+      <g
+         id="g30"
+         transform="translate(27.351425,-101.44263)">
+        <text
+           xml:space="preserve"
+           style="font-size:4.23333px;line-height:normal;font-family:'Anonymous Pro';-inkscape-font-specification:'Anonymous Pro, Normal';text-decoration-color:#000000;writing-mode:lr-tb;direction:ltr;fill:#000000;stroke-width:0.264583"
+           x="17.577188"
+           y="245.65027"
+           id="text9-5"><tspan
+             sodipodi:role="line"
+             style="stroke-width:0.264583"
+             x="17.577188"
+             y="245.65027"
+             id="tspan10-7">Job Folder</tspan></text>
+        <text
+           xml:space="preserve"
+           style="font-size:3.175px;line-height:normal;font-family:'Anonymous Pro';-inkscape-font-specification:'Anonymous Pro, Normal';text-decoration-color:#000000;writing-mode:lr-tb;direction:ltr;fill:#000000;stroke-width:0.264583"
+           x="24.036224"
+           y="249.35127"
+           id="text11-3"><tspan
+             sodipodi:role="line"
+             style="font-style:italic;font-size:3.175px;stroke-width:0.264583"
+             x="24.036224"
+             y="249.35127"
+             id="tspan13-3">Filesystem staging area for one job.</tspan></text>
+      </g>
+      <g
+         id="g31"
+         transform="translate(18.349691,-46.701422)">
+        <text
+           xml:space="preserve"
+           style="font-size:3.175px;line-height:normal;font-family:'Anonymous Pro';-inkscape-font-specification:'Anonymous Pro, Normal';text-decoration-color:#000000;writing-mode:lr-tb;direction:ltr;fill:#000000;stroke-width:0.264583"
+           x="33.079819"
+           y="208.53911"
+           id="text11-3-7-8-0"><tspan
+             sodipodi:role="line"
+             style="font-style:italic;font-size:3.175px;stroke-width:0.264583"
+             x="33.079819"
+             y="208.53911"
+             id="tspan21-4">Immutable status/completion/failure report written by the Execution Satellite</tspan><tspan
+             sodipodi:role="line"
+             style="font-style:italic;font-size:3.175px;stroke-width:0.264583"
+             x="33.079819"
+             y="212.50786"
+             id="tspan22">according to the satellite contract.</tspan></text>
+        <text
+           xml:space="preserve"
+           style="font-size:4.23333px;line-height:normal;font-family:'Anonymous Pro';-inkscape-font-specification:'Anonymous Pro, Normal';text-decoration-color:#000000;writing-mode:lr-tb;direction:ltr;fill:#000000;stroke-width:0.264583"
+           x="26.643002"
+           y="204.07277"
+           id="text9-2-1"><tspan
+             sodipodi:role="line"
+             style="stroke-width:0.264583"
+             x="26.643002"
+             y="204.07277"
+             id="tspan10-6-8">On-Disk Job Update</tspan></text>
+      </g>
+      <g
+         id="g32"
+         transform="translate(18.34969,-24.23544)">
+        <text
+           xml:space="preserve"
+           style="font-size:3.175px;line-height:normal;font-family:'Anonymous Pro';-inkscape-font-specification:'Anonymous Pro, Normal';text-decoration-color:#000000;writing-mode:lr-tb;direction:ltr;fill:#000000;stroke-width:0.264583"
+           x="33.095322"
+           y="208.49724"
+           id="text11-3-7-8-0-9"><tspan
+             sodipodi:role="line"
+             style="font-style:italic;font-size:3.175px;stroke-width:0.264583"
+             x="33.095322"
+             y="208.49724"
+             id="tspan22-0">The filesystem communication agreement between stickerdb and an execution</tspan><tspan
+             sodipodi:role="line"
+             style="font-style:italic;font-size:3.175px;stroke-width:0.264583"
+             x="33.095322"
+             y="212.46599"
+             id="tspan23">satellite: folder structure, manifest format, status/update files, result files,</tspan><tspan
+             sodipodi:role="line"
+             style="font-style:italic;font-size:3.175px;stroke-width:0.264583"
+             x="33.095322"
+             y="216.43474"
+             id="tspan24">error files, and completion semantics.</tspan></text>
+        <text
+           xml:space="preserve"
+           style="font-size:4.23333px;line-height:normal;font-family:'Anonymous Pro';-inkscape-font-specification:'Anonymous Pro, Normal';text-decoration-color:#000000;writing-mode:lr-tb;direction:ltr;fill:#000000;stroke-width:0.264583"
+           x="26.616131"
+           y="199.50458"
+           id="text9-2-1-5"><tspan
+             sodipodi:role="line"
+             style="stroke-width:0.264583"
+             x="26.616131"
+             y="199.50458"
+             id="tspan10-6-8-4">Execution Satellite</tspan><tspan
+             sodipodi:role="line"
+             style="stroke-width:0.264583"
+             x="26.616131"
+             y="204.79623"
+             id="tspan16">Contract</tspan></text>
+      </g>
+    </g>
+    <text
+       xml:space="preserve"
+       style="font-size:6.35px;line-height:normal;font-family:'Anonymous Pro';-inkscape-font-specification:'Anonymous Pro, Normal';text-align:center;text-decoration-color:#000000;writing-mode:lr-tb;direction:ltr;text-anchor:middle;fill:#000000;stroke-width:0.264583"
+       x="108.22285"
+       y="25.801456"
+       id="text9-20"><tspan
+         sodipodi:role="line"
+         style="font-size:6.35px;stroke-width:0.264583"
+         x="108.22285"
+         y="25.801456"
+         id="tspan10-73">tkinter Program &lt;-&gt; Execution Satellite</tspan><tspan
+         sodipodi:role="line"
+         style="font-size:6.35px;stroke-width:0.264583"
+         x="108.22285"
+         y="33.738956"
+         id="tspan32">System Language</tspan></text>
+  </g>
+</svg>

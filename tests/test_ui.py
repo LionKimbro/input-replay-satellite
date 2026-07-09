@@ -1,6 +1,9 @@
 from pathlib import Path
+import queue
 
-from executionsatellite import ui
+import pytest
+
+from input_replay_satellite import ui
 
 
 def make_config():
@@ -29,6 +32,8 @@ def test_layout_checklist_contains_layout_requirements():
     assert "Launch folder is open on the left side of the right display" in items
     assert "Launch folder is open to C:\\Users\\Robert\\Launch" in items
     assert '"Save As" in Leonardo Design Studio saves to D:\\tmp\\Untitled.LDS' in items
+    assert 'Ensure that the Launch folder\'s "View | Show > Navigation Pane" is OFF' in items
+    assert 'Ensure that the Launch folder\'s "View | Extra large icons" is ON' in items
     assert "You will not touch the mouse or keyboard during playback." in items
 
 
@@ -40,6 +45,8 @@ def test_print_checklist_contains_print_requirements():
     assert titles == ["print_lds_file", "always"]
     assert "The printer is on." in items
     assert "The printer is loaded with paper." in items
+    assert 'Ensure that the Launch folder\'s "View | Show > Navigation Pane" is OFF' in items
+    assert 'Ensure that the Launch folder\'s "View | Extra large icons" is ON' in items
     assert not any("Save As" in item for item in items)
 
 
@@ -55,3 +62,47 @@ def test_mixed_checklist_contains_both_job_sections_once():
     titles = [section["title"] for section in checklist]
 
     assert titles == ["layout_sticker_to_lds", "print_lds_file", "always"]
+
+
+def test_parse_minutes_budget_blank_means_no_limit():
+    assert ui.parse_minutes_budget("") is None
+    assert ui.parse_minutes_budget("   ") is None
+
+
+def test_parse_minutes_budget_positive_number():
+    budget = ui.parse_minutes_budget("45")
+
+    assert budget["started-at"] is None
+    assert budget["seconds"] == 2700
+    assert budget["expired"] is False
+
+
+def test_parse_minutes_budget_rejects_invalid_values():
+    for value in ["0", "-1", "nope"]:
+        with pytest.raises(ValueError, match="Enter a positive number of minutes, or leave blank."):
+            ui.parse_minutes_budget(value)
+
+
+def test_format_duration_uses_hh_mm_ss_and_never_negative():
+    assert ui.format_duration(2533) == "00:42:13"
+    assert ui.format_duration(3661) == "01:01:01"
+    assert ui.format_duration(-1) == "00:00:00"
+
+
+def test_stop_queue_if_time_expired_only_between_jobs(monkeypatch):
+    ui.g["events"] = queue.Queue()
+    ui.g["queue-budget"] = {"started-at": 1.0, "seconds": 1.0, "expired": False}
+    monkeypatch.setattr(ui, "has_time_budget_expired", lambda: True)
+
+    assert ui.stop_queue_if_time_expired(0, 2) is True
+    assert ui.g["queue-budget"]["expired"] is True
+    assert ui.g["events"].get_nowait()["type"] == "queue-time-expired"
+
+
+def test_stop_queue_if_time_expired_does_not_stop_after_last_job(monkeypatch):
+    ui.g["events"] = queue.Queue()
+    ui.g["queue-budget"] = {"started-at": 1.0, "seconds": 1.0, "expired": False}
+    monkeypatch.setattr(ui, "has_time_budget_expired", lambda: True)
+
+    assert ui.stop_queue_if_time_expired(1, 2) is False
+    assert ui.g["events"].empty()

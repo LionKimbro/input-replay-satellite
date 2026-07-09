@@ -1,13 +1,13 @@
 {
   "zookeep-project-guid": "e6a1ad8f-7fe5-48be-9a8b-6aa7300029f7",
-  "name": "execution-satellite",
+  "name": "input-replay-satellite",
   "repo-type": "python-2026-03",
   "license": "CC0-1.0",
   "repository": {
-    "name": "execution-satellite",
+    "name": "input-replay-satellite",
     "visibility": "public"
   },
   "python-package": {
-    "name": "executionsatellite"
+    "name": "input_replay_satellite"
   }
 }

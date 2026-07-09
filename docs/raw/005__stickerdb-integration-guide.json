@@ -1,16 +1,16 @@
 {
   "document": {
-    "document-id": "stickerdb.execution-satellite.integration-guide.v1",
-    "title": "StickerDB Integration Guide for Execution Satellite",
+    "document-id": "stickerdb.input-replay-satellite.integration-guide.v1",
+    "title": "StickerDB Integration Guide for Input Replay Satellite",
     "tags": [
       "stickerdb",
-      "execution-satellite",
+      "input-replay-satellite",
       "integration",
       "filetalk",
       "job-cell",
       "inputlog"
     ],
-    "purpose": "Tell the StickerDB implementation agent exactly how to submit jobs to the current Execution Satellite application and consume its responses.",
+    "purpose": "Tell the StickerDB implementation agent exactly how to submit jobs to the current Input Replay Satellite application and consume its responses.",
     "author": [
       "Lion Kimbro",
       "Codex"
@@ -33,61 +33,61 @@
     }
   },
   "coordinates": {
-    "execution-satellite-repository": "C:/lion/github/execution-satellite",
-    "execution-satellite-project-directory-current-location": "C:/lion/github/execution-satellite/.execution-satellite",
+    "input-replay-satellite-repository": "C:/lion/github/input-replay-satellite",
+    "input-replay-satellite-project-directory-current-location": "C:/lion/github/input-replay-satellite/.input-replay-satellite",
     "submission-inbox-relative-to-project-directory": "inbox/",
     "integration-guide": {
-      "document-id": "stickerdb.execution-satellite.integration-guide.v1",
-      "path": "C:/lion/github/execution-satellite/docs/raw/005__stickerdb-integration-guide.json"
+      "document-id": "stickerdb.input-replay-satellite.integration-guide.v1",
+      "path": "C:/lion/github/input-replay-satellite/docs/raw/005__stickerdb-integration-guide.json"
     }
   },
   "recommended-reading-for-stickerdb-coding-agent": [
     {
       "order": 1,
-      "document-id": "stickerdb.execution-satellite.integration-guide.v1",
-      "path": "C:/lion/github/execution-satellite/docs/raw/005__stickerdb-integration-guide.json",
+      "document-id": "stickerdb.input-replay-satellite.integration-guide.v1",
+      "path": "C:/lion/github/input-replay-satellite/docs/raw/005__stickerdb-integration-guide.json",
       "reason": "Current implementation-facing instructions for integrating StickerDB with the running satellite."
     },
     {
       "order": 2,
-      "document-id": "stickerdb.execution-satellite.job-cell.v1",
-      "path": "C:/lion/github/execution-satellite/docs/raw/004__job-cell-outline.json",
+      "document-id": "stickerdb.input-replay-satellite.job-cell.v1",
+      "path": "C:/lion/github/input-replay-satellite/docs/raw/004__job-cell-outline.json",
       "reason": "Requester-owned external job-cell structure, ownership, and lifecycle."
     },
     {
       "order": 3,
-      "document-id": "stickerdb.execution-satellite.protocol.softspec.v1",
-      "path": "C:/lion/github/execution-satellite/docs/raw/003__communication-protocol.json",
+      "document-id": "stickerdb.input-replay-satellite.protocol.softspec.v1",
+      "path": "C:/lion/github/input-replay-satellite/docs/raw/003__communication-protocol.json",
       "reason": "Request and response JSON meanings and structures."
     },
     {
       "order": 4,
-      "document-id": "stickerdb.execution-satellite.principles.v1",
-      "path": "C:/lion/github/execution-satellite/docs/raw/002__broad-principles.json",
+      "document-id": "stickerdb.input-replay-satellite.principles.v1",
+      "path": "C:/lion/github/input-replay-satellite/docs/raw/002__broad-principles.json",
       "reason": "Architectural purpose, human-gating, ownership, failure, expiration, and response-honesty principles."
     }
   ],
   "stickerdb-configuration": {
-    "principle": "StickerDB should be configured with one deployment anchor: the lionscliapp project directory belonging to Execution Satellite.",
-    "recommended-key": "execpath.execution-satellite-project-dir",
-    "current-default-or-setup-value": "C:/lion/github/execution-satellite/.execution-satellite",
-    "example-command": "sticker-db set execpath.execution-satellite-project-dir C:/lion/github/execution-satellite/.execution-satellite",
+    "principle": "StickerDB should be configured with one deployment anchor: the lionscliapp project directory belonging to Input Replay Satellite.",
+    "recommended-key": "execpath.input-replay-satellite-project-dir",
+    "current-default-or-setup-value": "C:/lion/github/input-replay-satellite/.input-replay-satellite",
+    "example-command": "sticker-db set execpath.input-replay-satellite-project-dir C:/lion/github/input-replay-satellite/.input-replay-satellite",
     "derived-paths": {
-      "submission-inbox": "<execpath.execution-satellite-project-dir>/inbox",
-      "execution-satellite-working-directory-if-needed": "parent of <execpath.execution-satellite-project-dir>"
+      "submission-inbox": "<execpath.input-replay-satellite-project-dir>/inbox",
+      "input-replay-satellite-working-directory-if-needed": "parent of <execpath.input-replay-satellite-project-dir>"
     },
     "rules": [
-      "StickerDB should not hard-code the execution-satellite repository location.",
+      "StickerDB should not hard-code the input-replay-satellite repository location.",
       "StickerDB should not separately configure the inbox when it is the conventional inbox child of the configured project directory.",
       "The configured value should be an absolute path after lionscliapp resolves execpath.*.",
       "StickerDB should validate that the configured project directory exists and that its inbox child is available or can be created according to the agreed deployment policy.",
       "StickerDB normally communicates by writing files and does not need to launch the satellite process.",
-      "If a future feature launches or focuses Execution Satellite, the working directory is the parent of the configured .execution-satellite directory."
+      "If a future feature launches or focuses Input Replay Satellite, the working directory is the parent of the configured .input-replay-satellite directory."
     ],
-    "naming-note": "The actual lionscliapp project-directory name is .execution-satellite, with a hyphen."
+    "naming-note": "The actual lionscliapp project-directory name is .input-replay-satellite, with a hyphen."
   },
   "important-boundary": {
-    "statement": "StickerDB owns its job cells. Execution Satellite owns only its inbox copies and local run records.",
+    "statement": "StickerDB owns its job cells. Input Replay Satellite owns only its inbox copies and local run records.",
     "stickerdb-owns": [
       "The job_id.",
       "The requester-side job cell.",
@@ -157,12 +157,12 @@
         "instruction": "StickerDB decides when to archive, re-up, or delete the requester-side job cell."
       }
     ],
-    "atomic-submission-reason": "The satellite scans every *.json file in the inbox derived from the configured Execution Satellite project directory. A temporary extension prevents it from reading a partially copied request.",
+    "atomic-submission-reason": "The satellite scans every *.json file in the inbox derived from the configured Input Replay Satellite project directory. A temporary extension prevents it from reading a partially copied request.",
     "recommended-inbox-filename": "<job_id>.json",
     "filename-note": "The satellite does not derive identity from the inbox filename; job_id inside the request is authoritative. A unique job-based filename is recommended for legibility and collision avoidance."
   },
   "request-contract": {
-    "schema": "stickerdb.execution_satellite.request.v1",
+    "schema": "stickerdb.input_replay_satellite.request.v1",
     "universal-required-fields": [
       "schema",
       "job_id",
@@ -174,7 +174,7 @@
     ],
     "rules": [
       "The request must be a JSON object.",
-      "schema must be exactly stickerdb.execution_satellite.request.v1.",
+      "schema must be exactly stickerdb.input_replay_satellite.request.v1.",
       "job_id must be a non-empty string and unique for this submission.",
       "created_at and expires_at must be ISO-8601 timestamps with timezones.",
       "expires_at must be later than created_at.",
@@ -203,7 +203,7 @@
   },
   "request-examples": {
     "layout_sticker_to_lds": {
-      "schema": "stickerdb.execution_satellite.request.v1",
+      "schema": "stickerdb.input_replay_satellite.request.v1",
       "job_id": "job-2026-06-20-a1b2c3d4",
       "job": "layout_sticker_to_lds",
       "created_at": "2026-06-20T14:00:00-07:00",
@@ -217,7 +217,7 @@
       "response_path": "D:/projects/stickers/.stickerdb/jobs/job-2026-06-20-a1b2c3d4/jobctrl/response.json"
     },
     "print_lds_file": {
-      "schema": "stickerdb.execution_satellite.request.v1",
+      "schema": "stickerdb.input_replay_satellite.request.v1",
       "job_id": "job-2026-06-20-e5f6a7b8",
       "job": "print_lds_file",
       "created_at": "2026-06-20T14:10:00-07:00",
@@ -229,10 +229,10 @@
     }
   },
   "response-contract": {
-    "schema": "stickerdb.execution_satellite.response.v1",
+    "schema": "stickerdb.input_replay_satellite.response.v1",
     "required-consumer-checks": [
       "The file parses as a JSON object.",
-      "schema is stickerdb.execution_satellite.response.v1.",
+      "schema is stickerdb.input_replay_satellite.response.v1.",
       "job_id matches the submitted job.",
       "job matches the submitted operation.",
       "ok and status are interpreted together.",
@@ -287,8 +287,8 @@
   },
   "stickerdb-implementation-checklist": [
     "Create a small satellite integration module isolated from StickerDB UI and database logic.",
-    "Declare execpath.execution-satellite-project-dir in StickerDB and let the user persist it with sticker-db set.",
-    "Derive the submission inbox as the inbox child of the configured Execution Satellite project directory.",
+    "Declare execpath.input-replay-satellite-project-dir in StickerDB and let the user persist it with sticker-db set.",
+    "Derive the submission inbox as the inbox child of the configured Input Replay Satellite project directory.",
     "Create requester-owned job cells and absolute paths.",
     "Write requester request.json before submitting its copy.",
     "Submit through temporary-file plus atomic rename.",
@@ -300,7 +300,7 @@
     "Leave requester-side cleanup under StickerDB control."
   ],
   "non-contractual-internals": [
-    "Everything in the configured Execution Satellite project directory other than the inbox submission boundary is private to the satellite unless a later specification explicitly says otherwise.",
+    "Everything in the configured Input Replay Satellite project directory other than the inbox submission boundary is private to the satellite unless a later specification explicitly says otherwise.",
     "StickerDB should not read, enumerate, or depend on the satellite-owned runs directory.",
     "StickerDB should not invoke InputLog directly.",
     "StickerDB should not depend on the satellite's hashed local run-directory names.",

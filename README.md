@@ -1,4 +1,4 @@
-# execution-satellite
+# input-replay-satellite
 
 Human-gated execution of StickerDB production jobs through InputLog.
 
@@ -10,13 +10,13 @@ prepared Leonardo Design Studio desktop.
 
 ```text
 pip install -e .
-execution-satellite
+input-replay-satellite
 ```
 
-The default local state lives in `.execution-satellite/`:
+The default local state lives in `.input-replay-satellite/`:
 
 ```text
-.execution-satellite/
+.input-replay-satellite/
   config.json
   inbox/
   runs/
@@ -28,14 +28,14 @@ paths to requester-owned inputs, outputs, and its response callback.
 Useful commands:
 
 ```text
-execution-satellite list
-execution-satellite inspect
-execution-satellite doctor
-execution-satellite keys
-execution-satellite get recording.layout
-execution-satellite set execpath.inputlog-root C:/lion/installed/inputlog
-execution-satellite set execpath.staging-folder C:/Users/Robert/Launch
-execution-satellite set execpath.leonardo-save-folder D:/tmp
+input-replay-satellite list
+input-replay-satellite inspect
+input-replay-satellite doctor
+input-replay-satellite keys
+input-replay-satellite get recording.layout
+input-replay-satellite set execpath.inputlog-root C:/lion/installed/inputlog
+input-replay-satellite set execpath.staging-folder C:/Users/Robert/Launch
+input-replay-satellite set execpath.leonardo-save-folder D:/tmp
 ```
 
 The launch folder is a dedicated transient stage. It must be completely empty

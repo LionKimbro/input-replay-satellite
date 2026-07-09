@@ -8,8 +8,8 @@ from datetime import datetime
 from pathlib import Path
 
 
-REQUEST_SCHEMA = "stickerdb.execution_satellite.request.v1"
-RESPONSE_SCHEMA = "stickerdb.execution_satellite.response.v1"
+REQUEST_SCHEMA = "stickerdb.input_replay_satellite.request.v1"
+RESPONSE_SCHEMA = "stickerdb.input_replay_satellite.response.v1"
 REPORT_KEYS = {
     "ts",
     "recording",
@@ -307,7 +307,7 @@ def execute_job(request, config, run_dir):
             "status": "failed",
             "started-at": outcome.get("started-at") if outcome else None,
             "finished-at": now_string(),
-            "message": f"Execution Satellite could not prepare or collect the job: {exc}",
+            "message": f"Input Replay Satellite could not prepare or collect the job: {exc}",
             "error": {"type": type(exc).__name__, "message": str(exc)},
             "report": outcome.get("report") if outcome else None,
             "stdout": outcome.get("stdout", "") if outcome else "",

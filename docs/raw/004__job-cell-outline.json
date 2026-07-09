@@ -1,17 +1,17 @@
 {
 "document": {
-"document-id": "stickerdb.execution-satellite.job-cell.v1",
-"title": "StickerDB Execution Satellite Job Cell",
+"document-id": "stickerdb.input-replay-satellite.job-cell.v1",
+"title": "StickerDB Input Replay Satellite Job Cell",
 "tags": [
 "stickerdb",
-"execution-satellite",
+"input-replay-satellite",
 "job-cell",
 "filesystem",
 "request",
 "response",
 "file-ownership"
 ],
-"purpose": "Describe the requester-owned job cell used by StickerDB when preparing execution satellite jobs.",
+"purpose": "Describe the requester-owned job cell used by StickerDB when preparing input replay satellite jobs.",
 "author": [
 "Lion Kimbro",
 "Wing-Cat"
@@ -21,7 +21,7 @@
 },
 
 "summary": {
-"one-sentence": "A job cell is a requester-owned folder containing the request, input argument files, response data files, and response control file for one execution satellite job.",
+"one-sentence": "A job cell is a requester-owned folder containing the request, input argument files, response data files, and response control file for one input replay satellite job.",
 "plain-language": "StickerDB creates a little folder-world for each satellite job. The satellite may read from it and write to requested paths inside it, but StickerDB owns the folder and cleans it up later."
 },
 
@@ -224,7 +224,7 @@
 
 
 "request-json": {
-  "schema": "stickerdb.execution_satellite.request.v1",
+  "schema": "stickerdb.input_replay_satellite.request.v1",
   "job_id": "job-ed3fa723",
   "job": "layout_sticker_to_lds",
   "created_at": "2026-06-19T08:50:00-07:00",
@@ -253,7 +253,7 @@
 
 
 "request-json": {
-  "schema": "stickerdb.execution_satellite.request.v1",
+  "schema": "stickerdb.input_replay_satellite.request.v1",
   "job_id": "job-a18bd442",
   "job": "print_lds_file",
   "created_at": "2026-06-19T09:10:00-07:00",

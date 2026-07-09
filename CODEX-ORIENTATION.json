@@ -1,17 +1,17 @@
 {
   "document": {
-    "document-id": "execution-satellite.codex-orientation.v1",
-    "title": "Codex Orientation for execution-satellite",
+    "document-id": "input-replay-satellite.codex-orientation.v1",
+    "title": "Codex Orientation for input-replay-satellite",
     "tags": [
       "codex",
       "orientation",
       "project-local",
       "llm"
     ],
-    "purpose": "Keep durable pointers and compact working notes for Codex while collaborating with Lion on execution-satellite."
+    "purpose": "Keep durable pointers and compact working notes for Codex while collaborating with Lion on input-replay-satellite."
   },
   "project-documentation": {
-    "location": "C:\\lion\\github\\execution-satellite\\docs\\raw",
+    "location": "C:\\lion\\github\\input-replay-satellite\\docs\\raw",
     "status": "all-files-read-as-of-2026-06-20",
     "files-read": [
       "001__coordinates.json",
@@ -38,7 +38,7 @@
     "stickerdb-overview": {
       "path": "C:\\lion\\code\\stickerdb\\docs\\raw\\001__overview.json",
       "status": "read",
-      "use": "Orient Execution Satellite to the neighboring StickerDB application and its expected future communication with this project."
+      "use": "Orient Input Replay Satellite to the neighboring StickerDB application and its expected future communication with this project."
     },
     "inputlog-play-command-and-report": {
       "path": "C:\\lion\\github\\inputlog\\docs\\raw\\003_play-command-and-report-soft-spec.json",
@@ -50,7 +50,7 @@
       "path": "C:\\lion\\github\\lionscliapp\\doc\\reference.json",
       "document-id": "lionscliapp.reference.v1",
       "status": "read",
-      "use": "Required framework for hosting, configuring, and running the Execution Satellite application."
+      "use": "Required framework for hosting, configuring, and running the Input Replay Satellite application."
     },
     "document-writing-conventions": {
       "path": "C:\\lion\\github\\lions-documents\\raw\\0002__lions-docs-description_json-document-for-llms_simplified_v1.json",
@@ -80,12 +80,12 @@
       "When an entry points to a full specification, seek that specification before making details load-bearing."
     ],
     "stickerdb-relationship": [
-      "Execution Satellite orbits StickerDB: treat StickerDB as a neighboring application and likely future source or destination of communication.",
+      "Input Replay Satellite orbits StickerDB: treat StickerDB as a neighboring application and likely future source or destination of communication.",
       "StickerDB is a Lion Conventional Tkinter database editor whose data model uses M1 transport units.",
       "StickerDB expects filesystem-native FileTalk communication through isolated inbox and outbox boundaries.",
       "Do not infer a detailed message protocol from the overview; inspect the relevant specification or live artifacts when communication work begins."
     ],
-    "execution-satellite-core": [
+    "input-replay-satellite-core": [
       "The satellite separates StickerDB's production intent from fragile GUI execution in Leonardo Design Studio through InputLog.",
       "Execution is human-gated: receiving a request does not authorize immediate execution; the operator prepares the desktop and starts the run.",
       "StickerDB owns each requester-side job cell and its cleanup. The satellite may read named inputs, write named outputs and response_path, but must not clean requester-owned files.",
@@ -119,7 +119,7 @@
       "labels-added may indicate that InputLog rewrote the selected recording during the run."
     ],
     "lionscliapp-hosting": [
-      "The Execution Satellite app must use lionscliapp for application hosting, persistent configuration, CLI parsing, command dispatch, and lifecycle.",
+      "The Input Replay Satellite app must use lionscliapp for application hosting, persistent configuration, CLI parsing, command dispatch, and lifecycle.",
       "Declare the application, project directory, configuration keys, descriptions, and commands before calling app.main() as the final entrypoint operation.",
       "Use app.ctx only during command execution; it is empty during declaration.",
       "Prefer projpath.* for satellite-owned files under its hidden project directory and execpath.* for paths resolved from the invocation execution root.",

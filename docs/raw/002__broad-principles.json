@@ -1,17 +1,17 @@
 {
 "document": {
-"document-id": "stickerdb.execution-satellite.principles.v1",
-"title": "StickerDB Execution Satellite Principles",
+"document-id": "stickerdb.input-replay-satellite.principles.v1",
+"title": "StickerDB Input Replay Satellite Principles",
 "tags": [
 "stickerdb",
-"execution-satellite",
+"input-replay-satellite",
 "automation",
 "filetalk",
 "inputlog",
 "leonardo-design-studio",
 "principles"
 ],
-"purpose": "Define the broad architectural principles for the StickerDB Execution Satellite system.",
+"purpose": "Define the broad architectural principles for the StickerDB Input Replay Satellite system.",
 "author": [
 "Lion Kimbro",
 "Wing-Cat"
@@ -21,18 +21,18 @@
 },
 
 "summary": {
-"one-sentence": "An execution satellite is a human-gated batch executor that performs fragile GUI-bound production tasks requested by StickerDB.",
-"plain-language": "StickerDB decides that a production operation needs to happen. The execution satellite performs that operation later, when the user has prepared the correct desktop and explicitly started execution. The satellite writes a response back to the path supplied by the requester."
+"one-sentence": "An input replay satellite is a human-gated batch executor that performs fragile GUI-bound production tasks requested by StickerDB.",
+"plain-language": "StickerDB decides that a production operation needs to happen. The input replay satellite performs that operation later, when the user has prepared the correct desktop and explicitly started execution. The satellite writes a response back to the path supplied by the requester."
 },
 
 "core-idea": {
 "statement": "Separate production intent from fragile GUI execution.",
-"explanation": "StickerDB should not directly take over the mouse and keyboard, because Leonardo Design Studio operations depend on screen layout, application state, and human readiness. Instead, StickerDB creates request files. The execution satellite reads those requests, runs the appropriate operation when the human is ready, and writes response files."
+"explanation": "StickerDB should not directly take over the mouse and keyboard, because Leonardo Design Studio operations depend on screen layout, application state, and human readiness. Instead, StickerDB creates request files. The input replay satellite reads those requests, runs the appropriate operation when the human is ready, and writes response files."
 },
 
 "roles": {
 "requester": {
-"description": "The program that creates jobs for the execution satellite.",
+"description": "The program that creates jobs for the input replay satellite.",
 "initial-requester": "StickerDB",
 "responsibilities": [
 "Create a requester-owned job cell.",
@@ -47,9 +47,9 @@
 ]
 },
 
-"execution-satellite": {
+"input-replay-satellite": {
   "description": "A human-gated executor for jobs that cannot safely or cleanly run inside the requester program.",
-  "initial-satellite": "Leonardo Design Studio / InputLog execution satellite",
+  "initial-satellite": "Leonardo Design Studio / InputLog input replay satellite",
   "responsibilities": [
     "Receive or discover request files.",
     "Keep its own local inbox, cache, logs, and records as needed.",
@@ -68,7 +68,7 @@
   "responsibilities": [
     "Open or switch to the prepared execution desktop.",
     "Ensure Leonardo Design Studio and related windows are arranged correctly.",
-    "Start or focus the execution satellite.",
+    "Start or focus the input replay satellite.",
     "Review pending work.",
     "Begin execution.",
     "Resolve interruptions using the satellite UI."
@@ -107,21 +107,21 @@
 },
 
 "human-readiness": {
-"principle": "Human readiness is implicit in the idea of an execution satellite.",
-"explanation": "If the work could safely run immediately inside StickerDB, it would not need to be sent to an execution satellite. Therefore, v1 requests do not need a requires_human_ready field.",
+"principle": "Human readiness is implicit in the idea of an input replay satellite.",
+"explanation": "If the work could safely run immediately inside StickerDB, it would not need to be sent to an input replay satellite. Therefore, v1 requests do not need a requires_human_ready field.",
 "consequence": "The satellite should not execute merely because a request exists. It executes when the operator starts a run from the prepared environment."
 },
 
 "v1-scope": {
 "not-generic": {
-"rule": "The first execution satellite is not a universal command executor.",
+"rule": "The first input replay satellite is not a universal command executor.",
 "reason": "The first real problem is Leonardo Design Studio / InputLog execution, not generic process scheduling."
 },
 
 
 "no-capability-registry": {
   "rule": "V1 does not require capability discovery or a satellite registry.",
-  "reason": "StickerDB and the first execution satellite are being developed together for known job types."
+  "reason": "StickerDB and the first input replay satellite are being developed together for known job types."
 },
 
 "known-initial-jobs": [

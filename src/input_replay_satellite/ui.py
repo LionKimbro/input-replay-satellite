@@ -2,12 +2,13 @@ import os
 import queue
 import threading
 import tkinter as tk
+import time
 from pathlib import Path
 from tkinter import filedialog, messagebox, ttk
 
 from PIL import Image, ImageOps, ImageTk
 
-from executionsatellite import core
+from input_replay_satellite import core
 
 
 g = {
@@ -22,6 +23,8 @@ g = {
     "preview-image": None,
     "preview-source-image": None,
     "context-entry": None,
+    "queue-budget": None,
+    "timer-after-id": None,
 }
 
 
@@ -29,7 +32,7 @@ def run(config):
     g["config"] = config
     root = tk.Tk()
     g["root"] = root
-    root.title("Execution Satellite")
+    root.title("Input Replay Satellite")
     root.geometry("1050x660")
     create_widgets(root)
     refresh_queue()
@@ -49,7 +52,7 @@ def create_widgets(root):
     frame.rowconfigure(2, weight=1)
     frame.rowconfigure(4, weight=1)
 
-    title = ttk.Label(frame, text="Execution Satellite", font=("TkDefaultFont", 16, "bold"))
+    title = ttk.Label(frame, text="Input Replay Satellite", font=("TkDefaultFont", 16, "bold"))
     title.grid(row=0, column=0, sticky="w", pady=(0, 10))
 
     path_frame = ttk.LabelFrame(frame, text="Execution locations", padding=8)
@@ -87,14 +90,19 @@ def create_widgets(root):
 
     controls = ttk.Frame(frame)
     controls.grid(row=3, column=0, sticky="ew", pady=10)
-    refresh_button = ttk.Button(controls, text="Refresh", command=refresh_queue)
-    refresh_button.pack(side="left")
+    ttk.Label(controls, text="Run for").pack(side="left")
+    minutes_var = tk.StringVar(value="")
+    minutes_entry = ttk.Entry(controls, textvariable=minutes_var, width=6)
+    minutes_entry.pack(side="left", padx=(6, 4))
+    ttk.Label(controls, text="minutes").pack(side="left", padx=(0, 8))
     start_button = ttk.Button(controls, text="Start Pending Queue", command=start_queue)
-    start_button.pack(side="left", padx=(8, 0))
+    start_button.pack(side="left")
     checklist_button = ttk.Button(controls, text="Preflight Checklist", command=show_preflight_checklist)
     checklist_button.pack(side="left", padx=(8, 0))
     clear_button = ttk.Button(controls, text="Clear Queue", command=clear_queue)
     clear_button.pack(side="left", padx=(8, 0))
+    timer_var = tk.StringVar(value="No time limit")
+    ttk.Label(controls, textvariable=timer_var).pack(side="right", padx=(12, 0))
     pending_var = tk.StringVar(value="")
     ttk.Label(controls, textvariable=pending_var).pack(side="right")
 
@@ -121,10 +129,12 @@ def create_widgets(root):
 
     g["widgets"] = {
         "tree": tree,
-        "refresh": refresh_button,
+        "minutes-entry": minutes_entry,
+        "minutes-var": minutes_var,
         "start": start_button,
         "checklist": checklist_button,
         "clear": clear_button,
+        "timer-var": timer_var,
         "pending-var": pending_var,
         "preview-tree": preview_tree,
         "image-canvas": image_canvas,
@@ -199,13 +209,18 @@ def start_queue():
         return
     pending = [entry for entry in g["entries"] if entry["state"] == "pending"]
     if not pending:
-        messagebox.showinfo("Execution Satellite", "There are no pending jobs.")
+        messagebox.showinfo("Input Replay Satellite", "There are no pending jobs.")
+        return
+    try:
+        budget = parse_minutes_budget(g["widgets"]["minutes-var"].get())
+    except ValueError as exc:
+        messagebox.showerror("Input Replay Satellite", str(exc))
         return
     sync_runtime_paths()
     problems = core.validate_queue_preflight(pending, g["config"])
     if problems:
         messagebox.showerror(
-            "Execution Satellite — unsafe to launch",
+            "Input Replay Satellite — unsafe to launch",
             "\n\n".join(problems),
         )
         return
@@ -213,6 +228,7 @@ def start_queue():
         return
 
     g["running"] = True
+    g["queue-budget"] = budget
     set_controls_enabled(False)
     start_countdown(pending, 3)
 
@@ -227,8 +243,85 @@ def start_countdown(entries, count):
         return
 
     set_status(f"Running {len(entries)} job(s). Do not touch mouse or keyboard during playback.")
+    start_timer_display()
     worker = threading.Thread(target=run_queue, args=(entries,), daemon=True)
     worker.start()
+
+
+def parse_minutes_budget(text):
+    value = text.strip()
+    if not value:
+        return None
+    try:
+        minutes = float(value)
+    except ValueError as exc:
+        raise ValueError("Enter a positive number of minutes, or leave blank.") from exc
+    if minutes <= 0:
+        raise ValueError("Enter a positive number of minutes, or leave blank.")
+    return {
+        "started-at": None,
+        "seconds": minutes * 60.0,
+        "expired": False,
+    }
+
+
+def activate_queue_budget():
+    budget = g.get("queue-budget")
+    if budget is not None and budget["started-at"] is None:
+        budget["started-at"] = time.monotonic()
+
+
+def has_time_budget_expired():
+    budget = g.get("queue-budget")
+    if budget is None or budget["started-at"] is None:
+        return False
+    return time.monotonic() - budget["started-at"] >= budget["seconds"]
+
+
+def mark_time_budget_expired():
+    budget = g.get("queue-budget")
+    if budget is not None:
+        budget["expired"] = True
+
+
+def format_duration(seconds):
+    remaining = max(0, int(seconds))
+    hours = remaining // 3600
+    minutes = (remaining % 3600) // 60
+    secs = remaining % 60
+    return f"{hours:02d}:{minutes:02d}:{secs:02d}"
+
+
+def get_timer_text():
+    budget = g.get("queue-budget")
+    if budget is None:
+        return "No time limit"
+    if budget.get("expired"):
+        return "Time expired — finishing current task"
+    if budget["started-at"] is None:
+        return format_duration(budget["seconds"]) + " remaining"
+    remaining = budget["seconds"] - (time.monotonic() - budget["started-at"])
+    return format_duration(remaining) + " remaining"
+
+
+def start_timer_display():
+    activate_queue_budget()
+    update_timer_display()
+
+
+def update_timer_display():
+    if not g["running"]:
+        set_timer_text("No time limit")
+        g["timer-after-id"] = None
+        return
+    if has_time_budget_expired():
+        mark_time_budget_expired()
+    set_timer_text(get_timer_text())
+    g["timer-after-id"] = g["root"].after(250, update_timer_display)
+
+
+def set_timer_text(text):
+    g["widgets"]["timer-var"].set(text)
 
 
 def run_queue(entries):
@@ -245,6 +338,10 @@ def run_queue(entries):
 
 def _run_queue(entries):
     for queue_index, entry in enumerate(entries):
+        if has_time_budget_expired():
+            mark_time_budget_expired()
+            g["events"].put({"type": "queue-time-expired"})
+            return
         attempt = 1
         while True:
             g["events"].put(
@@ -265,7 +362,9 @@ def _run_queue(entries):
             if outcome["normal"]:
                 response = core.make_response(entry["request"], outcome)
                 core.complete_entry(entry, response, outcome)
-                g["events"].put({"type": "job-finished", "entry": entry, "response": response})
+                pause_after_job_if_needed(entry, response, queue_index, len(entries))
+                if stop_queue_if_time_expired(queue_index, len(entries)):
+                    return
                 break
 
             g["events"].put(
@@ -284,7 +383,9 @@ def _run_queue(entries):
             response = core.make_response(entry["request"], outcome)
             if decision == "fail-job":
                 core.complete_entry(entry, response, outcome)
-                g["events"].put({"type": "job-finished", "entry": entry, "response": response})
+                pause_after_job_if_needed(entry, response, queue_index, len(entries))
+                if stop_queue_if_time_expired(queue_index, len(entries)):
+                    return
                 break
 
             core.complete_entry(entry, response, outcome)
@@ -299,6 +400,32 @@ def _run_queue(entries):
             return
 
     g["events"].put({"type": "queue-finished"})
+
+
+def stop_queue_if_time_expired(queue_index, queue_count):
+    if queue_index >= queue_count - 1:
+        return False
+    if not has_time_budget_expired():
+        return False
+    mark_time_budget_expired()
+    g["events"].put({"type": "queue-time-expired"})
+    return True
+
+
+def pause_after_job_if_needed(entry, response, queue_index, queue_count):
+    acknowledged = threading.Event()
+    g["events"].put(
+        {
+            "type": "job-finished",
+            "entry": entry,
+            "response": response,
+            "queue-index": queue_index,
+            "queue-count": queue_count,
+            "acknowledged": acknowledged,
+        }
+    )
+    if queue_index < queue_count - 1:
+        acknowledged.wait()
 
 
 def poll_worker_events():
@@ -320,7 +447,7 @@ def handle_worker_event(event):
         )
         return
     if event_type == "job-finished":
-        set_status(f"{event['entry']['job-id']}: {event['response']['message']}")
+        handle_job_finished_event(event)
         return
     if event_type == "decision-required":
         choose_after_abnormal_result(event)
@@ -329,11 +456,50 @@ def handle_worker_event(event):
         finish_run("Queue failed by operator decision.")
         return
     if event_type == "queue-error":
-        messagebox.showerror("Execution Satellite", event["message"])
+        messagebox.showerror("Input Replay Satellite", event["message"])
         finish_run("Queue stopped because the satellite encountered an error.")
+        return
+    if event_type == "queue-time-expired":
+        finish_run("Stopped — time budget expired", "Stopped — time budget expired")
         return
     if event_type == "queue-finished":
         finish_run("Queue complete.")
+
+
+def handle_job_finished_event(event):
+    acknowledged = event.get("acknowledged")
+    try:
+        update_finished_entry(event["entry"])
+        title = get_entry_title(event["entry"])
+        set_status(
+            f"Finished {event['queue-index'] + 1}/{event['queue-count']}: "
+            f"{title} — {event['response']['message']}"
+        )
+    finally:
+        if acknowledged is not None:
+            if event["queue-index"] < event["queue-count"] - 1:
+                g["root"].after(1500, acknowledged.set)
+            else:
+                acknowledged.set()
+
+
+def update_finished_entry(entry):
+    source_path = entry["source-path"]
+    for index, current in enumerate(g["entries"]):
+        if current["source-path"] != source_path:
+            continue
+        updated = core.load_queue_entry(source_path, g["config"]["projpath.runs"])
+        g["entries"][index] = updated
+        iid = str(index)
+        tree = g["widgets"]["tree"]
+        if tree.exists(iid):
+            tree.item(
+                iid,
+                values=(updated["state"], get_entry_title(updated), updated["job-id"], updated["expires-at"]),
+            )
+        if get_selected_entry() is not None and get_selected_entry()["source-path"] == source_path:
+            show_preview(updated)
+        return
 
 
 def choose_after_abnormal_result(event):
@@ -353,11 +519,20 @@ def choose_after_abnormal_result(event):
         g["decisions"].put("fail-queue")
 
 
-def finish_run(message):
+def finish_run(message, timer_text="No time limit"):
     g["running"] = False
+    g["queue-budget"] = None
+    timer_after_id = g.get("timer-after-id")
+    if timer_after_id is not None:
+        try:
+            g["root"].after_cancel(timer_after_id)
+        except tk.TclError:
+            pass
+    g["timer-after-id"] = None
     set_controls_enabled(True)
     refresh_queue()
     set_status(message)
+    set_timer_text(timer_text)
 
 
 def periodic_refresh():
@@ -369,7 +544,7 @@ def periodic_refresh():
 def handle_close():
     if g["running"]:
         messagebox.showwarning(
-            "Execution Satellite",
+            "Input Replay Satellite",
             "The queue is running. Resolve or finish the active InputLog job before closing the satellite.",
         )
         return
@@ -378,7 +553,7 @@ def handle_close():
 
 def set_controls_enabled(enabled):
     state = "normal" if enabled else "disabled"
-    g["widgets"]["refresh"].configure(state=state)
+    g["widgets"]["minutes-entry"].configure(state=state)
     g["widgets"]["start"].configure(state=state)
     g["widgets"]["checklist"].configure(state=state)
     g["widgets"]["clear"].configure(state=state)
@@ -516,7 +691,7 @@ def view_job(entry):
         return
     path = entry["source-path"]
     if not path.exists():
-        messagebox.showerror("Execution Satellite", f"Job file no longer exists:\n{path}")
+        messagebox.showerror("Input Replay Satellite", f"Job file no longer exists:\n{path}")
         return
     os.startfile(path)
 
@@ -525,7 +700,7 @@ def delete_job(entry):
     if entry is None:
         return
     if g["running"]:
-        messagebox.showwarning("Execution Satellite", "The queue is running. Do not delete queue items right now.")
+        messagebox.showwarning("Input Replay Satellite", "The queue is running. Do not delete queue items right now.")
         return
     if not messagebox.askyesno(
         "Delete job",
@@ -541,7 +716,7 @@ def reload_job(entry):
     if entry is None:
         return
     if g["running"]:
-        messagebox.showwarning("Execution Satellite", "The queue is running. Do not reload queue items right now.")
+        messagebox.showwarning("Input Replay Satellite", "The queue is running. Do not reload queue items right now.")
         return
     if not entry["source-path"].exists():
         refresh_queue()
@@ -612,7 +787,7 @@ def browse_path(variable):
 def open_path(variable):
     path = Path(variable.get().strip()).expanduser()
     if not path.is_dir():
-        messagebox.showerror("Execution Satellite", f"Folder does not exist:\n{path}")
+        messagebox.showerror("Input Replay Satellite", f"Folder does not exist:\n{path}")
         return
     os.startfile(path)
 
@@ -621,12 +796,12 @@ def show_preflight_checklist():
     sync_runtime_paths()
     pending = [entry for entry in g["entries"] if entry["state"] == "pending"]
     if not pending:
-        messagebox.showinfo("Execution Satellite — preflight checklist", "There are no pending jobs.")
+        messagebox.showinfo("Input Replay Satellite — preflight checklist", "There are no pending jobs.")
         return
     problems = core.validate_queue_preflight(pending, g["config"])
     if problems:
         messagebox.showerror(
-            "Execution Satellite — unsafe to launch",
+            "Input Replay Satellite — unsafe to launch",
             "\n\n".join(problems),
         )
         return
@@ -636,7 +811,7 @@ def show_preflight_checklist():
 def show_preflight_checklist_dialog(entries, mode):
     checklist = build_preflight_checklist(entries, g["config"])
     dialog = tk.Toplevel(g["root"])
-    dialog.title("Execution Satellite — preflight checklist")
+    dialog.title("Input Replay Satellite — preflight checklist")
     dialog.transient(g["root"])
     dialog.grab_set()
     dialog.geometry("720x520")
@@ -762,6 +937,8 @@ def build_preflight_checklist(entries, config):
         {
             "title": "always",
             "items": [
+                "Ensure that the Launch folder's \"View | Show > Navigation Pane\" is OFF",
+                "Ensure that the Launch folder's \"View | Extra large icons\" is ON",
                 "You will not touch the mouse or keyboard during playback.",
             ],
         }
