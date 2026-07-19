@@ -230,18 +230,22 @@ def start_queue():
     g["running"] = True
     g["queue-budget"] = budget
     set_controls_enabled(False)
-    start_countdown(pending, 3)
+    start_playback_countdown(lambda: begin_queue_worker(pending))
 
 
-def start_countdown(entries, count):
+def start_playback_countdown(on_ready, count=3):
     if count > 0:
         set_status(
             f"Starting in {count}... Hands off the mouse and keyboard. "
             "Let any click or keystroke settle."
         )
-        g["root"].after(1000, lambda: start_countdown(entries, count - 1))
+        g["root"].after(1000, lambda: start_playback_countdown(on_ready, count - 1))
         return
 
+    on_ready()
+
+
+def begin_queue_worker(entries):
     set_status(f"Running {len(entries)} job(s). Do not touch mouse or keyboard during playback.")
     start_timer_display()
     worker = threading.Thread(target=run_queue, args=(entries,), daemon=True)
@@ -383,7 +387,13 @@ def _run_queue(entries):
             response = core.make_response(entry["request"], outcome)
             if decision == "fail-job":
                 core.complete_entry(entry, response, outcome)
-                pause_after_job_if_needed(entry, response, queue_index, len(entries))
+                pause_after_job_if_needed(
+                    entry,
+                    response,
+                    queue_index,
+                    len(entries),
+                    countdown_before_next=True,
+                )
                 if stop_queue_if_time_expired(queue_index, len(entries)):
                     return
                 break
@@ -412,7 +422,13 @@ def stop_queue_if_time_expired(queue_index, queue_count):
     return True
 
 
-def pause_after_job_if_needed(entry, response, queue_index, queue_count):
+def pause_after_job_if_needed(
+    entry,
+    response,
+    queue_index,
+    queue_count,
+    countdown_before_next=False,
+):
     acknowledged = threading.Event()
     g["events"].put(
         {
@@ -422,6 +438,7 @@ def pause_after_job_if_needed(entry, response, queue_index, queue_count):
             "queue-index": queue_index,
             "queue-count": queue_count,
             "acknowledged": acknowledged,
+            "countdown-before-next": countdown_before_next,
         }
     )
     if queue_index < queue_count - 1:
@@ -478,7 +495,10 @@ def handle_job_finished_event(event):
     finally:
         if acknowledged is not None:
             if event["queue-index"] < event["queue-count"] - 1:
-                g["root"].after(1500, acknowledged.set)
+                if event.get("countdown-before-next"):
+                    start_playback_countdown(acknowledged.set)
+                else:
+                    g["root"].after(1500, acknowledged.set)
             else:
                 acknowledged.set()
 
@@ -512,11 +532,18 @@ def choose_after_abnormal_result(event):
         "Cancel: fail the entire queue",
     )
     if answer is True:
-        g["decisions"].put("retry")
+        submit_abnormal_decision(event, "retry")
     elif answer is False:
-        g["decisions"].put("fail-job")
+        submit_abnormal_decision(event, "fail-job")
     else:
-        g["decisions"].put("fail-queue")
+        submit_abnormal_decision(event, "fail-queue")
+
+
+def submit_abnormal_decision(event, decision):
+    if decision == "retry":
+        start_playback_countdown(lambda: g["decisions"].put(decision))
+        return
+    g["decisions"].put(decision)
 
 
 def finish_run(message, timer_text="No time limit"):
@@ -871,8 +898,11 @@ def show_preflight_checklist_dialog(entries, mode):
     button_row.grid(row=2, column=0, columnspan=2, sticky="e")
     primary_text = "Launch Queue" if mode == "launch" else "Done"
     primary = ttk.Button(button_row, text=primary_text)
+    damn_the_law = ttk.Button(button_row, text="Damn the Law!") if mode == "launch" else None
     cancel = ttk.Button(button_row, text="Cancel", command=dialog.destroy)
     primary.pack(side="left")
+    if damn_the_law is not None:
+        damn_the_law.pack(side="left", padx=(8, 0))
     cancel.pack(side="left", padx=(8, 0))
 
     def all_checked():
@@ -890,9 +920,15 @@ def show_preflight_checklist_dialog(entries, mode):
         state["accepted"] = True
         dialog.destroy()
 
+    def accept_without_checklist():
+        state["accepted"] = True
+        dialog.destroy()
+
     for variable in variables:
         variable.trace_add("write", update_primary_state)
     primary.configure(command=accept)
+    if damn_the_law is not None:
+        damn_the_law.configure(command=accept_without_checklist)
     update_primary_state()
 
     dialog.protocol("WM_DELETE_WINDOW", dialog.destroy)

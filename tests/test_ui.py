@@ -106,3 +106,83 @@ def test_stop_queue_if_time_expired_does_not_stop_after_last_job(monkeypatch):
 
     assert ui.stop_queue_if_time_expired(1, 2) is False
     assert ui.g["events"].empty()
+
+
+def test_playback_countdown_runs_callback_after_three_ticks(monkeypatch):
+    scheduled = []
+    statuses = []
+
+    class FakeRoot:
+        def after(self, delay, callback):
+            scheduled.append((delay, callback))
+
+    ui.g["root"] = FakeRoot()
+    monkeypatch.setattr(ui, "set_status", statuses.append)
+    ready = []
+
+    ui.start_playback_countdown(lambda: ready.append(True))
+
+    while scheduled:
+        delay, callback = scheduled.pop(0)
+        assert delay == 1000
+        callback()
+
+    assert ready == [True]
+    assert [message.split("...")[0] for message in statuses] == [
+        "Starting in 3",
+        "Starting in 2",
+        "Starting in 1",
+    ]
+
+
+def test_retry_decision_waits_for_playback_countdown(monkeypatch):
+    ui.g["decisions"] = queue.Queue()
+    callbacks = []
+    monkeypatch.setattr(ui, "start_playback_countdown", lambda callback: callbacks.append(callback))
+
+    ui.submit_abnormal_decision({}, "retry")
+
+    assert ui.g["decisions"].empty()
+    assert len(callbacks) == 1
+    callbacks[0]()
+    assert ui.g["decisions"].get_nowait() == "retry"
+
+
+def test_non_retry_decisions_are_sent_without_a_countdown(monkeypatch):
+    ui.g["decisions"] = queue.Queue()
+    monkeypatch.setattr(
+        ui,
+        "start_playback_countdown",
+        lambda _callback: pytest.fail("countdown should not start here"),
+    )
+
+    ui.submit_abnormal_decision({}, "fail-job")
+    ui.submit_abnormal_decision({}, "fail-queue")
+
+    assert ui.g["decisions"].get_nowait() == "fail-job"
+    assert ui.g["decisions"].get_nowait() == "fail-queue"
+
+
+def test_abnormal_job_completion_counts_down_before_next_job(monkeypatch):
+    ui.g["events"] = queue.Queue()
+
+    class FakeEvent:
+        def wait(self):
+            pass
+
+        def set(self):
+            pass
+
+    monkeypatch.setattr(ui.threading, "Event", FakeEvent)
+
+    ui.pause_after_job_if_needed(
+        {"job-id": "test"},
+        {"message": "failed"},
+        0,
+        2,
+        countdown_before_next=True,
+    )
+
+    event = ui.g["events"].get_nowait()
+    assert event["countdown-before-next"] is True
+    assert event["acknowledged"] is not None
