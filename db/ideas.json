@@ -1,0 +1,31 @@
+{
+  "items": [
+    {
+      "guid": "d7d80cee-bd45-4b2b-8960-df1b5dead10d",
+      "title": "Stopper",
+      "description": "Make it so the user an insert a stopper after the selected job.",
+      "status": "conceived",
+      "date-conceived": "2026-08-06",
+      "date-entered": "2026-08-06",
+      "notes": "-- STOPPER: <description of why> --\nex: \"-- STOPPER: adjust printer / load new paper --\"\n\nOr just:\n-- STOPPER --\n\"Stopped at operator barrier. Adjust setup, then Start Pending Queue.\"",
+      "tags": [
+        "stop",
+        "pause",
+        "stopper",
+        "userinterface"
+      ],
+      "pinned": true
+    },
+    {
+      "guid": "788a992d-ec2c-430e-b7f0-31389dd18b6b",
+      "title": "group cancellation",
+      "description": "",
+      "status": "conceived",
+      "date-conceived": "2026-08-06",
+      "date-entered": "2026-08-06",
+      "notes": "",
+      "tags": [],
+      "pinned": true
+    }
+  ]
+}

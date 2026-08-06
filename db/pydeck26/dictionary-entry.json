@@ -1,0 +1,16 @@
+{
+  "id": "input-replay-satellite",
+  "identity": {
+    "name": "input-replay-satellite",
+    "title": "Input Replay Satellite",
+    "tags": [
+      "automation",
+      "inputlog",
+      "input",
+      "replay",
+      "mouse",
+      "keyboard"
+    ],
+    "hook": "automate \"inputlog\" performance from external programs"
+  }
+}

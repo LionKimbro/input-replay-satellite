@@ -1,0 +1,4 @@
+2026-08-06:
+- I've just cleaned up the checklists system, and updated for InfranView print jobs.  It should be good.
+- STICKERDB:  I need to know what stickerdb is doing with old requests or unmet requests. I hope we don't have a big list of them.
+- Added "Stopper" idea, and group cancellations, to the list of ideas.
