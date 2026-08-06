@@ -12,7 +12,13 @@ def make_request(tmp_path, job="layout_sticker_to_lds"):
     now = datetime.now().astimezone()
     job_dir = tmp_path / "job"
     job_dir.mkdir(parents=True)
-    input_path = job_dir / ("sticker.png" if job == "layout_sticker_to_lds" else "sheet.lds")
+    filenames = {
+        "layout_sticker_to_lds": "sticker.png",
+        "print_lds_file": "sheet.lds",
+        "infranview_print_x1": "print-image.png",
+        "infranview_print_x2": "print-image.png",
+    }
+    input_path = job_dir / filenames[job]
     input_path.write_bytes(b"input")
     response_path = job_dir / "response.json"
     request = {
@@ -27,8 +33,10 @@ def make_request(tmp_path, job="layout_sticker_to_lds"):
     if job == "layout_sticker_to_lds":
         request["input"]["sticker_image_path"] = str(input_path)
         request["output"] = {"lds_file_path": str(job_dir / "generated.lds")}
-    else:
+    elif job == "print_lds_file":
         request["input"]["lds_file_path"] = str(input_path)
+    else:
+        request["input"]["image_path"] = str(input_path)
     return request
 
 
@@ -59,6 +67,8 @@ def make_config(tmp_path):
         "inputlog.command": "inputlog",
         "recording.layout": "layout",
         "recording.print": "print-sticker",
+        "recording.infranview-print-x1": "infranview-print-x1",
+        "recording.infranview-print-x2": "infranview-print-x2",
     }
 
 
@@ -89,6 +99,20 @@ def test_normalize_rejects_relative_response_path(tmp_path):
 
     with pytest.raises(ValueError, match="response_path must be an absolute path"):
         core.normalize_request(data)
+
+
+def test_normalize_infranview_print_x2_request(tmp_path):
+    request = core.normalize_request(make_request(tmp_path, "infranview_print_x2"))
+
+    assert request["input"]["image_path"].is_absolute()
+    assert request["output"] == {}
+
+
+def test_normalize_infranview_print_x1_request(tmp_path):
+    request = core.normalize_request(make_request(tmp_path, "infranview_print_x1"))
+
+    assert request["input"]["image_path"].is_absolute()
+    assert request["output"] == {}
 
 
 def test_scan_inbox_marks_invalid_expired_and_recorded(tmp_path):
@@ -264,6 +288,58 @@ def test_execute_print_stages_input_and_clears_folder(tmp_path, monkeypatch):
 
     assert outcome["normal"] is True
     assert seen["staged"] == ["sheet.lds"]
+    assert list(config["execpath.staging-folder"].iterdir()) == []
+
+
+def test_execute_infranview_print_x2_stages_image_and_clears_folder(tmp_path, monkeypatch):
+    request = core.normalize_request(make_request(tmp_path / "request", "infranview_print_x2"))
+    config = make_config(tmp_path / "config")
+    seen = {}
+
+    def run(command, cwd, capture_output, text, check):
+        seen["staged"] = [path.name for path in config["execpath.staging-folder"].iterdir()]
+        seen["recording"] = command[command.index("--recording") + 1]
+        report_path = Path(command[command.index("--report") + 1])
+        report_path.write_text(
+            json.dumps(make_report("infranview-print-x2")),
+            encoding="utf-8",
+        )
+        return SimpleNamespace(returncode=0, stdout="", stderr="")
+
+    monkeypatch.setattr(core.subprocess, "run", run)
+    outcome = core.execute_job(request, config, tmp_path / "run")
+
+    assert outcome["normal"] is True
+    assert seen == {
+        "staged": ["print-image.png"],
+        "recording": "infranview-print-x2",
+    }
+    assert list(config["execpath.staging-folder"].iterdir()) == []
+
+
+def test_execute_infranview_print_x1_stages_image_and_clears_folder(tmp_path, monkeypatch):
+    request = core.normalize_request(make_request(tmp_path / "request", "infranview_print_x1"))
+    config = make_config(tmp_path / "config")
+    seen = {}
+
+    def run(command, cwd, capture_output, text, check):
+        seen["staged"] = [path.name for path in config["execpath.staging-folder"].iterdir()]
+        seen["recording"] = command[command.index("--recording") + 1]
+        report_path = Path(command[command.index("--report") + 1])
+        report_path.write_text(
+            json.dumps(make_report("infranview-print-x1")),
+            encoding="utf-8",
+        )
+        return SimpleNamespace(returncode=0, stdout="", stderr="")
+
+    monkeypatch.setattr(core.subprocess, "run", run)
+    outcome = core.execute_job(request, config, tmp_path / "run")
+
+    assert outcome["normal"] is True
+    assert seen == {
+        "staged": ["print-image.png"],
+        "recording": "infranview-print-x1",
+    }
     assert list(config["execpath.staging-folder"].iterdir()) == []
 
 

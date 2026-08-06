@@ -50,18 +50,74 @@ def test_print_checklist_contains_print_requirements():
     assert not any("Save As" in item for item in items)
 
 
+def test_infranview_print_x2_checklist_has_no_leonardo_requirements():
+    checklist = ui.build_preflight_checklist([make_entry("infranview_print_x2")], make_config())
+    titles = [section["title"] for section in checklist]
+    items = flatten_items(checklist)
+
+    assert titles == ["infranview_print_x2", "always"]
+    assert "IrfanView is open on the left display" in items
+    assert "Make sure the printer defaults are presently set to the document size you want." in items
+    assert not any("Leonardo" in item for item in items)
+    assert not any("Save As" in item for item in items)
+
+
+def test_infranview_print_x1_checklist_has_no_leonardo_requirements():
+    checklist = ui.build_preflight_checklist([make_entry("infranview_print_x1")], make_config())
+    titles = [section["title"] for section in checklist]
+    items = flatten_items(checklist)
+
+    assert titles == ["infranview_print_x1", "always"]
+    assert "IrfanView is open on the left display" in items
+    assert "Make sure the printer defaults are presently set to the document size you want." in items
+    assert not any("Leonardo" in item for item in items)
+    assert not any("Save As" in item for item in items)
+
+
 def test_mixed_checklist_contains_both_job_sections_once():
     checklist = ui.build_preflight_checklist(
         [
             make_entry("layout_sticker_to_lds"),
             make_entry("print_lds_file"),
+            make_entry("infranview_print_x1"),
+            make_entry("infranview_print_x2"),
             make_entry("layout_sticker_to_lds"),
         ],
         make_config(),
     )
     titles = [section["title"] for section in checklist]
 
-    assert titles == ["layout_sticker_to_lds", "print_lds_file", "always"]
+    assert titles == [
+        "layout_sticker_to_lds",
+        "print_lds_file",
+        "infranview_print_x2",
+        "infranview_print_x1",
+        "always",
+    ]
+
+
+@pytest.mark.parametrize(
+    ("job", "input_key"),
+    [
+        ("layout_sticker_to_lds", "sticker_image_path"),
+        ("infranview_print_x1", "image_path"),
+        ("infranview_print_x2", "image_path"),
+    ],
+)
+def test_get_preview_image_path_returns_existing_image_for_image_jobs(tmp_path, job, input_key):
+    image_path = tmp_path / "sticker.png"
+    image_path.write_bytes(b"image")
+    request = {"job": job, "input": {input_key: image_path}}
+
+    assert ui.get_preview_image_path(request) == image_path
+
+
+def test_get_preview_image_path_ignores_non_image_jobs(tmp_path):
+    image_path = tmp_path / "sheet.lds"
+    image_path.write_bytes(b"lds")
+    request = {"job": "print_lds_file", "input": {"lds_file_path": image_path}}
+
+    assert ui.get_preview_image_path(request) is None
 
 
 def test_parse_minutes_budget_blank_means_no_limit():

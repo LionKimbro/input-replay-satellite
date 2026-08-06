@@ -1,0 +1,181 @@
+{
+  "document": {
+    "document-id": "stickerdb.input-replay-satellite.protocol.softspec.v2",
+    "title": "StickerDB Input Replay Satellite Communication Protocol SoftSpec v2",
+    "tags": [
+      "stickerdb",
+      "input-replay-satellite",
+      "softspec",
+      "json",
+      "protocol",
+      "request",
+      "response",
+      "job-cell",
+      "inputlog",
+      "irfanview"
+    ],
+    "purpose": "Describe the current JSON request and response protocol used between StickerDB and Input Replay Satellite, including image printing through IrfanView and InputLog.",
+    "author": [
+      "Lion Kimbro",
+      "Codex"
+    ],
+    "status": "implementation-current",
+    "created": "2026-07-27",
+    "supersedes": "stickerdb.input-replay-satellite.protocol.softspec.v1"
+  },
+  "overview": {
+    "description": "StickerDB requests a job by copying JSON into the satellite inbox. The request retains absolute paths to requester-owned inputs, outputs, and response callback. Input Replay Satellite runs a request only after an operator explicitly launches the queue, then writes one response JSON file to response_path.",
+    "style": "SoftSpec: descriptive over rigid validation. This document names the current implemented job vocabulary and the meanings of its request and response fields.",
+    "versioning": "This document supersedes the v1 protocol document as the implementation-current job vocabulary. The request and response schema string remains *.v1 because the wire structure is compatible; this document version does not require a schema-string change.",
+    "ownership": [
+      "StickerDB owns requester-side job cells and their cleanup.",
+      "The satellite may read named requester inputs and write only named outputs and response_path.",
+      "The satellite must not delete requester-owned inputs, outputs, response files, or job-cell directories."
+    ]
+  },
+  "transport-and-lifecycle": {
+    "submission": "Copy one request JSON file into the satellite-owned inbox.",
+    "execution": "Human-gated. A pending request does not itself authorize GUI automation.",
+    "request-identity": "job_id is stable across retries and uniquely identifies one requester job.",
+    "expiration": "The satellite rejects a request whose expires_at has passed before it begins.",
+    "response": "The satellite atomically writes one terminal response JSON object to response_path.",
+    "additional-request-keys": "Tolerated unless a future protocol revision documents different behavior."
+  },
+  "inputlog-integration": {
+    "working-directory": "C:/lion/installed/inputlog by default, configurable as execpath.inputlog-root.",
+    "command-shape": "inputlog play --recording <recording-name> --report <attempt-report-path>",
+    "completion-rule": "The satellite waits for InputLog to exit and requires a readable, current report for the expected recording. Only completion-status normal is a normal automation outcome.",
+    "physical-print-caution": "A normal InputLog result proves only that the recording reached its end. It does not independently prove printer operation, print quality, or physical output."
+  },
+  "v2-jobs": {
+    "layout_sticker_to_lds": {
+      "description": "Given a sticker image, create an LDS file through Leonardo Design Studio.",
+      "input": [
+        "sticker_image_path"
+      ],
+      "output": [
+        "lds_file_path"
+      ],
+      "inputlog-recording": "layout"
+    },
+    "print_lds_file": {
+      "description": "Given an LDS file, print it through Leonardo Design Studio using InputLog automation.",
+      "input": [
+        "lds_file_path"
+      ],
+      "output": [],
+      "inputlog-recording": "print-sticker"
+    },
+    "infranview_print_x1": {
+      "description": "Given an image file, stage it in the Launch folder and use the IrfanView x1 InputLog recording to print it. The recording uses the printer defaults active when playback begins.",
+      "input": [
+        "image_path"
+      ],
+      "output": [],
+      "inputlog-recording": "infranview-print-x1",
+      "operator-preflight": [
+        "IrfanView is open and ready for the recorded sequence.",
+        "The printer is on and loaded with paper.",
+        "Make sure the printer defaults are presently set to the document size you want.",
+        "The dedicated Launch folder is blank at the instant the operator starts the queue."
+      ],
+      "success-observation": "InputLog completed the IrfanView x1 print recording normally. This does not independently prove physical print quality."
+    },
+    "infranview_print_x2": {
+      "description": "Given an image file, stage it in the Launch folder and use the IrfanView x2 InputLog recording to print it. The recording uses the printer defaults active when playback begins.",
+      "input": [
+        "image_path"
+      ],
+      "output": [],
+      "inputlog-recording": "infranview-print-x2",
+      "operator-preflight": [
+        "IrfanView is open and ready for the recorded sequence.",
+        "The printer is on and loaded with paper.",
+        "Make sure the printer defaults are presently set to the document size you want.",
+        "The dedicated Launch folder is blank at the instant the operator starts the queue."
+      ],
+      "success-observation": "InputLog completed the IrfanView x2 print recording normally. This does not independently prove physical print quality."
+    }
+  },
+  "request-contract": {
+    "schema": "stickerdb.input_replay_satellite.request.v1",
+    "required-fields": [
+      "schema",
+      "job_id",
+      "job",
+      "created_at",
+      "expires_at",
+      "input",
+      "response_path"
+    ],
+    "rules": [
+      "schema must be stickerdb.input_replay_satellite.request.v1.",
+      "job_id and job must be non-empty strings.",
+      "created_at and expires_at must be timezone-aware timestamps, and expires_at must be later than created_at.",
+      "input and output, when present, must be JSON objects.",
+      "Every input path, output path, and response_path must be an absolute path.",
+      "Requests should be treated as immutable after submission."
+    ],
+    "job-inputs": {
+      "layout_sticker_to_lds": {
+        "sticker_image_path": "Absolute path to the requester-owned sticker image."
+      },
+      "print_lds_file": {
+        "lds_file_path": "Absolute path to the requester-owned LDS file to print."
+      },
+      "infranview_print_x1": {
+        "image_path": "Absolute path to the requester-owned image file. The satellite copies this file, retaining its filename, into the dedicated Launch folder for this attempt."
+      },
+      "infranview_print_x2": {
+        "image_path": "Absolute path to the requester-owned image file. The satellite copies this file, retaining its filename, into the dedicated Launch folder for this attempt."
+      }
+    },
+    "job-outputs": {
+      "layout_sticker_to_lds": {
+        "lds_file_path": "Absolute path where the satellite must leave the generated LDS file."
+      },
+      "print_lds_file": "May be omitted or empty.",
+      "infranview_print_x1": "May be omitted or empty.",
+      "infranview_print_x2": "May be omitted or empty."
+    }
+  },
+  "response-contract": {
+    "schema": "stickerdb.input_replay_satellite.response.v1",
+    "terminal-statuses": {
+      "done": "The satellite observed a normal automation outcome and completed any defined output collection.",
+      "interrupted": "InputLog observed physical user input that stopped playback, and the operator chose a terminal disposition.",
+      "failed": "The request, staging, InputLog playback, completion report, or output collection failed.",
+      "expired": "The request was past expires_at before it was run."
+    },
+    "print-job-observation": "For print_lds_file, infranview_print_x1, and infranview_print_x2, a done response reports normal automation completion only. It does not assert physical printing, print quantity, printer state, or print quality."
+  },
+  "examples": {
+    "infranview-print-x2-request": {
+      "schema": "stickerdb.input_replay_satellite.request.v1",
+      "job_id": "job-2026-07-27-8c42d5ef",
+      "job": "infranview_print_x2",
+      "created_at": "2026-07-27T16:00:00-07:00",
+      "expires_at": "2026-07-28T16:00:00-07:00",
+      "input": {
+        "image_path": "D:/projects/stickers/.stickerdb/jobs/job-2026-07-27-8c42d5ef/request-args/sticker.png"
+      },
+      "response_path": "D:/projects/stickers/.stickerdb/jobs/job-2026-07-27-8c42d5ef/jobctrl/response.json"
+    },
+    "infranview-print-x2-success-response": {
+      "schema": "stickerdb.input_replay_satellite.response.v1",
+      "job_id": "job-2026-07-27-8c42d5ef",
+      "job": "infranview_print_x2",
+      "ok": true,
+      "status": "done",
+      "message": "InputLog completed the IrfanView x2 print recording normally.",
+      "started_at": "2026-07-27T16:03:00-07:00",
+      "finished_at": "2026-07-27T16:03:18-07:00",
+      "outputs": {},
+      "error": null,
+      "observations": [
+        "InputLog completion-status was normal at stage complete.",
+        "The satellite does not independently verify physical print quality."
+      ]
+    }
+  }
+}

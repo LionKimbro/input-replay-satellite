@@ -63,7 +63,12 @@ def cmd_doctor():
     output = result.stdout.strip()
     print(f"InputLog root: {root}")
     print(output or "InputLog returned no recording list.")
-    required = [config["recording.layout"], config["recording.print"]]
+    required = [
+        config["recording.layout"],
+        config["recording.print"],
+        config["recording.infranview-print-x1"],
+        config["recording.infranview-print-x2"],
+    ]
     available = {
         line.removesuffix(" *").strip()
         for line in output.splitlines()
@@ -112,6 +117,10 @@ def declare():
     app.describe_key("recording.layout", "InputLog recording used for layout_sticker_to_lds.")
     app.declare_key("recording.print", "print-sticker")
     app.describe_key("recording.print", "InputLog recording used for print_lds_file.")
+    app.declare_key("recording.infranview-print-x2", "infranview-print-x2")
+    app.describe_key("recording.infranview-print-x2", "InputLog recording used for infranview_print_x2.")
+    app.declare_key("recording.infranview-print-x1", "infranview-print-x1")
+    app.describe_key("recording.infranview-print-x1", "InputLog recording used for infranview_print_x1.")
     app.declare_key("poll.ms", "2000")
     app.describe_key("poll.ms", "GUI inbox polling interval in milliseconds.")
 
@@ -145,6 +154,8 @@ def get_config():
         "inputlog.command": app.ctx["inputlog.command"],
         "recording.layout": app.ctx["recording.layout"],
         "recording.print": app.ctx["recording.print"],
+        "recording.infranview-print-x1": app.ctx["recording.infranview-print-x1"],
+        "recording.infranview-print-x2": app.ctx["recording.infranview-print-x2"],
         "poll.ms": poll_ms,
     }
 

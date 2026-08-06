@@ -636,9 +636,15 @@ def add_preview_row(field, value, parent=""):
 
 
 def get_preview_image_path(request):
-    if request["job"] != "layout_sticker_to_lds":
+    image_keys = {
+        "layout_sticker_to_lds": "sticker_image_path",
+        "infranview_print_x1": "image_path",
+        "infranview_print_x2": "image_path",
+    }
+    image_key = image_keys.get(request["job"])
+    if image_key is None:
         return None
-    path = request["input"].get("sticker_image_path")
+    path = request["input"].get(image_key)
     if path is None or not path.is_file():
         return None
     return path
@@ -965,6 +971,36 @@ def build_preflight_checklist(entries, config):
                     f"Launch folder is open to {launch_folder}",
                     "The printer is on.",
                     "The printer is loaded with paper.",
+                ],
+            }
+        )
+
+    if "infranview_print_x2" in jobs:
+        sections.append(
+            {
+                "title": "infranview_print_x2",
+                "items": [
+                    "IrfanView is open on the left display",
+                    "Launch folder is open on the left side of the right display",
+                    f"Launch folder is open to {launch_folder}",
+                    "The printer is on.",
+                    "The printer is loaded with paper.",
+                    "Make sure the printer defaults are presently set to the document size you want.",
+                ],
+            }
+        )
+
+    if "infranview_print_x1" in jobs:
+        sections.append(
+            {
+                "title": "infranview_print_x1",
+                "items": [
+                    "IrfanView is open on the left display",
+                    "Launch folder is open on the left side of the right display",
+                    f"Launch folder is open to {launch_folder}",
+                    "The printer is on.",
+                    "The printer is loaded with paper.",
+                    "Make sure the printer defaults are presently set to the document size you want.",
                 ],
             }
         )

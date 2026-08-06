@@ -30,6 +30,16 @@ JOB_SPECS = {
         "inputs": ["lds_file_path"],
         "outputs": [],
     },
+    "infranview_print_x2": {
+        "recording-key": "recording.infranview-print-x2",
+        "inputs": ["image_path"],
+        "outputs": [],
+    },
+    "infranview_print_x1": {
+        "recording-key": "recording.infranview-print-x1",
+        "inputs": ["image_path"],
+        "outputs": [],
+    },
 }
 PENDING_STATES = {"pending"}
 
@@ -452,7 +462,11 @@ def make_response(request, outcome):
     if outcome["normal"]:
         for key, path in request["output"].items():
             observations.append(f"The requested {key} exists at {path}.")
-        if request["job"] == "print_lds_file":
+        if request["job"] in {
+            "print_lds_file",
+            "infranview_print_x1",
+            "infranview_print_x2",
+        }:
             observations.append("The satellite does not independently verify physical print quality.")
 
     error = None
@@ -538,7 +552,11 @@ def get_attempt_dir(runs, job_id, attempt):
 def make_success_message(request):
     if request["job"] == "layout_sticker_to_lds":
         return "InputLog completed normally and the requested LDS file exists."
-    return "InputLog completed the LDS print recording normally."
+    if request["job"] == "print_lds_file":
+        return "InputLog completed the LDS print recording normally."
+    if request["job"] == "infranview_print_x1":
+        return "InputLog completed the IrfanView x1 print recording normally."
+    return "InputLog completed the IrfanView x2 print recording normally."
 
 
 def require_nonempty_string(value, name):
