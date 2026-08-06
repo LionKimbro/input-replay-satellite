@@ -11,6 +11,65 @@ from PIL import Image, ImageOps, ImageTk
 from input_replay_satellite import core
 
 
+PREFLIGHT_CHECKLISTS = {
+    "infran-view": {
+        "title": "InfranView",
+        "items": [
+            "InfranView is open on the left display.",
+        ],
+        "incompatible-with": ["leonardo-design-studio"],
+    },
+    "leonardo-design-studio": {
+        "title": "Leonardo Design Studio",
+        "items": [
+            "Leonardo Design Studio is open on the left display.",
+            "Leonardo Design Studio contains only one, fresh, blank tab.",
+        ],
+        "incompatible-with": ["infran-view"],
+    },
+    "launch-folder": {
+        "title": "Launch folder",
+        "items": [
+            "Launch folder is open on the left half of the right display.",
+            "Launch folder is open to {launch_folder}.",
+            'Ensure that the Launch folder\'s "View | Show > Navigation Pane" is OFF.',
+            'Ensure that the Launch folder\'s "View | Extra large icons" is ON.',
+        ],
+        "incompatible-with": [],
+    },
+    "printer-ready": {
+        "title": "Printer ready",
+        "items": [
+            "The printer is on.",
+            "The printer is loaded with the right size of paper for your task.",
+        ],
+        "incompatible-with": [],
+    },
+    "leonardo-save-as": {
+        "title": "Leonardo Save As destination",
+        "items": [
+            '"Save As" in Leonardo Design Studio saves to {leonardo_output}.',
+        ],
+        "incompatible-with": [],
+    },
+    "infranview-test-print": {
+        "title": "InfranView test print",
+        "items": [
+            "You have completed one print with InfranView, manually, "
+            "with the right size of paper and paper settings for your task load.",
+        ],
+        "incompatible-with": [],
+    },
+    "standard": {
+        "title": "Standard playback",
+        "items": [
+            "You will not touch the mouse or keyboard during playback.",
+        ],
+        "incompatible-with": [],
+    },
+}
+
+
 g = {
     "root": None,
     "widgets": {},
@@ -843,6 +902,7 @@ def show_preflight_checklist():
 
 def show_preflight_checklist_dialog(entries, mode):
     checklist = build_preflight_checklist(entries, g["config"])
+    incompatibilities = find_checklist_incompatibilities(checklist)
     dialog = tk.Toplevel(g["root"])
     dialog.title("Input Replay Satellite — preflight checklist")
     dialog.transient(g["root"])
@@ -878,6 +938,20 @@ def show_preflight_checklist_dialog(entries, mode):
 
     variables = []
     row = 0
+    if incompatibilities:
+        conflict_text = "\n".join(
+            f"{checklist_id} is incompatible with {other_checklist_id}."
+            for checklist_id, other_checklist_id in incompatibilities
+        )
+        conflict = ttk.Label(
+            content,
+            text=conflict_text,
+            foreground="#b00020",
+            wraplength=660,
+        )
+        conflict.grid(row=row, column=0, sticky="ew", pady=(4, 10))
+        row += 1
+
     for section in checklist:
         label = ttk.Label(content, text=section["title"], font=("TkDefaultFont", 10, "bold"))
         label.grid(row=row, column=0, sticky="w", pady=(8, 4))
@@ -918,10 +992,10 @@ def show_preflight_checklist_dialog(entries, mode):
         if mode == "review":
             primary.configure(state="normal")
             return
-        primary.configure(state="normal" if all_checked() else "disabled")
+        primary.configure(state="normal" if all_checked() and not incompatibilities else "disabled")
 
     def accept():
-        if mode == "launch" and not all_checked():
+        if mode == "launch" and (not all_checked() or incompatibilities):
             return
         state["accepted"] = True
         dialog.destroy()
@@ -943,77 +1017,32 @@ def show_preflight_checklist_dialog(entries, mode):
 
 
 def build_preflight_checklist(entries, config):
-    jobs = {entry["job"] for entry in entries}
-    launch_folder = config["execpath.staging-folder"]
-    leonardo_output = core.get_leonardo_output_path(config)
-    sections = []
-
-    if "layout_sticker_to_lds" in jobs:
-        sections.append(
-            {
-                "title": "layout_sticker_to_lds",
-                "items": [
-                    "Leonardo Design Studio is open on the left display",
-                    "Launch folder is open on the left side of the right display",
-                    f"Launch folder is open to {launch_folder}",
-                    f'"Save As" in Leonardo Design Studio saves to {leonardo_output}',
-                ],
-            }
-        )
-
-    if "print_lds_file" in jobs:
-        sections.append(
-            {
-                "title": "print_lds_file",
-                "items": [
-                    "Leonardo Design Studio is open on the left display",
-                    "Launch folder is open on the left side of the right display",
-                    f"Launch folder is open to {launch_folder}",
-                    "The printer is on.",
-                    "The printer is loaded with paper.",
-                ],
-            }
-        )
-
-    if "infranview_print_x2" in jobs:
-        sections.append(
-            {
-                "title": "infranview_print_x2",
-                "items": [
-                    "IrfanView is open on the left display",
-                    "Launch folder is open on the left side of the right display",
-                    f"Launch folder is open to {launch_folder}",
-                    "The printer is on.",
-                    "The printer is loaded with paper.",
-                    "Make sure the printer defaults are presently set to the document size you want.",
-                ],
-            }
-        )
-
-    if "infranview_print_x1" in jobs:
-        sections.append(
-            {
-                "title": "infranview_print_x1",
-                "items": [
-                    "IrfanView is open on the left display",
-                    "Launch folder is open on the left side of the right display",
-                    f"Launch folder is open to {launch_folder}",
-                    "The printer is on.",
-                    "The printer is loaded with paper.",
-                    "Make sure the printer defaults are presently set to the document size you want.",
-                ],
-            }
-        )
-
-    sections.append(
+    checklist_ids = {
+        checklist_id
+        for entry in entries
+        for checklist_id in core.JOB_SPECS[entry["job"]]["checklists"]
+    }
+    format_values = {
+        "launch_folder": config["execpath.staging-folder"],
+        "leonardo_output": core.get_leonardo_output_path(config),
+    }
+    return [
         {
-            "title": "always",
-            "items": [
-                "Ensure that the Launch folder's \"View | Show > Navigation Pane\" is OFF",
-                "Ensure that the Launch folder's \"View | Extra large icons\" is ON",
-                "You will not touch the mouse or keyboard during playback.",
-            ],
+            "id": checklist_id,
+            "title": definition["title"],
+            "items": [item.format(**format_values) for item in definition["items"]],
         }
-    )
+        for checklist_id, definition in PREFLIGHT_CHECKLISTS.items()
+        if checklist_id in checklist_ids
+    ]
 
-    return sections
+
+def find_checklist_incompatibilities(checklist):
+    checklist_ids = {section["id"] for section in checklist}
+    return [
+        (checklist_id, incompatible_checklist_id)
+        for checklist_id in PREFLIGHT_CHECKLISTS
+        if checklist_id in checklist_ids
+        for incompatible_checklist_id in PREFLIGHT_CHECKLISTS[checklist_id]["incompatible-with"]
+        if incompatible_checklist_id in checklist_ids
+    ]

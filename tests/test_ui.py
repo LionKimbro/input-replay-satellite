@@ -22,59 +22,67 @@ def flatten_items(checklist):
     return [item for section in checklist for item in section["items"]]
 
 
-def test_layout_checklist_contains_layout_requirements():
+def test_layout_checklist_contains_complete_layout_requirements():
     checklist = ui.build_preflight_checklist([make_entry("layout_sticker_to_lds")], make_config())
-    titles = [section["title"] for section in checklist]
+    checklist_ids = [section["id"] for section in checklist]
     items = flatten_items(checklist)
 
-    assert titles == ["layout_sticker_to_lds", "always"]
-    assert "Leonardo Design Studio is open on the left display" in items
-    assert "Launch folder is open on the left side of the right display" in items
-    assert "Launch folder is open to C:\\Users\\Robert\\Launch" in items
-    assert '"Save As" in Leonardo Design Studio saves to D:\\tmp\\Untitled.LDS' in items
-    assert 'Ensure that the Launch folder\'s "View | Show > Navigation Pane" is OFF' in items
-    assert 'Ensure that the Launch folder\'s "View | Extra large icons" is ON' in items
+    assert checklist_ids == [
+        "leonardo-design-studio",
+        "launch-folder",
+        "leonardo-save-as",
+        "standard",
+    ]
+    assert "Leonardo Design Studio is open on the left display." in items
+    assert "Leonardo Design Studio contains only one, fresh, blank tab." in items
+    assert "Launch folder is open on the left half of the right display." in items
+    assert "Launch folder is open to C:\\Users\\Robert\\Launch." in items
+    assert '"Save As" in Leonardo Design Studio saves to D:\\tmp\\Untitled.LDS.' in items
+    assert 'Ensure that the Launch folder\'s "View | Show > Navigation Pane" is OFF.' in items
+    assert 'Ensure that the Launch folder\'s "View | Extra large icons" is ON.' in items
     assert "You will not touch the mouse or keyboard during playback." in items
 
 
-def test_print_checklist_contains_print_requirements():
+def test_print_checklist_contains_complete_print_requirements():
     checklist = ui.build_preflight_checklist([make_entry("print_lds_file")], make_config())
-    titles = [section["title"] for section in checklist]
+    checklist_ids = [section["id"] for section in checklist]
     items = flatten_items(checklist)
 
-    assert titles == ["print_lds_file", "always"]
+    assert checklist_ids == [
+        "leonardo-design-studio",
+        "launch-folder",
+        "printer-ready",
+        "standard",
+    ]
     assert "The printer is on." in items
-    assert "The printer is loaded with paper." in items
-    assert 'Ensure that the Launch folder\'s "View | Show > Navigation Pane" is OFF' in items
-    assert 'Ensure that the Launch folder\'s "View | Extra large icons" is ON' in items
+    assert "The printer is loaded with the right size of paper for your task." in items
+    assert 'Ensure that the Launch folder\'s "View | Show > Navigation Pane" is OFF.' in items
+    assert 'Ensure that the Launch folder\'s "View | Extra large icons" is ON.' in items
     assert not any("Save As" in item for item in items)
 
 
-def test_infranview_print_x2_checklist_has_no_leonardo_requirements():
-    checklist = ui.build_preflight_checklist([make_entry("infranview_print_x2")], make_config())
-    titles = [section["title"] for section in checklist]
-    items = flatten_items(checklist)
+def test_infranview_print_jobs_share_one_complete_checklist_set():
+    x1_checklist = ui.build_preflight_checklist([make_entry("infranview_print_x1")], make_config())
+    x2_checklist = ui.build_preflight_checklist([make_entry("infranview_print_x2")], make_config())
+    checklist_ids = [section["id"] for section in x1_checklist]
+    items = flatten_items(x1_checklist)
 
-    assert titles == ["infranview_print_x2", "always"]
-    assert "IrfanView is open on the left display" in items
-    assert "Make sure the printer defaults are presently set to the document size you want." in items
+    assert x1_checklist == x2_checklist
+    assert checklist_ids == [
+        "infran-view",
+        "launch-folder",
+        "printer-ready",
+        "infranview-test-print",
+        "standard",
+    ]
+    assert "InfranView is open on the left display." in items
+    assert "The printer is loaded with the right size of paper for your task." in items
+    assert any("completed one print with InfranView" in item for item in items)
     assert not any("Leonardo" in item for item in items)
     assert not any("Save As" in item for item in items)
 
 
-def test_infranview_print_x1_checklist_has_no_leonardo_requirements():
-    checklist = ui.build_preflight_checklist([make_entry("infranview_print_x1")], make_config())
-    titles = [section["title"] for section in checklist]
-    items = flatten_items(checklist)
-
-    assert titles == ["infranview_print_x1", "always"]
-    assert "IrfanView is open on the left display" in items
-    assert "Make sure the printer defaults are presently set to the document size you want." in items
-    assert not any("Leonardo" in item for item in items)
-    assert not any("Save As" in item for item in items)
-
-
-def test_mixed_checklist_contains_both_job_sections_once():
+def test_mixed_checklist_is_deduplicated_and_uses_dictionary_order():
     checklist = ui.build_preflight_checklist(
         [
             make_entry("layout_sticker_to_lds"),
@@ -85,14 +93,44 @@ def test_mixed_checklist_contains_both_job_sections_once():
         ],
         make_config(),
     )
-    titles = [section["title"] for section in checklist]
+    checklist_ids = [section["id"] for section in checklist]
 
-    assert titles == [
-        "layout_sticker_to_lds",
-        "print_lds_file",
-        "infranview_print_x2",
-        "infranview_print_x1",
-        "always",
+    assert checklist_ids == [
+        "infran-view",
+        "leonardo-design-studio",
+        "launch-folder",
+        "printer-ready",
+        "leonardo-save-as",
+        "infranview-test-print",
+        "standard",
+    ]
+
+
+def test_checklist_incompatibilities_are_derived_from_the_registry():
+    checklist = ui.build_preflight_checklist(
+        [make_entry("layout_sticker_to_lds"), make_entry("infranview_print_x1")],
+        make_config(),
+    )
+
+    assert ui.find_checklist_incompatibilities(checklist) == [
+        ("infran-view", "leonardo-design-studio"),
+        ("leonardo-design-studio", "infran-view"),
+    ]
+
+
+def test_checklist_incompatibilities_do_not_depend_on_specific_checklist_names(monkeypatch):
+    monkeypatch.setattr(
+        ui,
+        "PREFLIGHT_CHECKLISTS",
+        {
+            "alpha": {"incompatible-with": ["beta"]},
+            "beta": {"incompatible-with": ["alpha"]},
+        },
+    )
+
+    assert ui.find_checklist_incompatibilities([{"id": "alpha"}, {"id": "beta"}]) == [
+        ("alpha", "beta"),
+        ("beta", "alpha"),
     ]
 
 

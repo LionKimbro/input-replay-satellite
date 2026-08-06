@@ -24,21 +24,47 @@ JOB_SPECS = {
         "recording-key": "recording.layout",
         "inputs": ["sticker_image_path"],
         "outputs": ["lds_file_path"],
+        "checklists": [
+            "leonardo-design-studio",
+            "launch-folder",
+            "leonardo-save-as",
+            "standard",
+        ],
     },
     "print_lds_file": {
         "recording-key": "recording.print",
         "inputs": ["lds_file_path"],
         "outputs": [],
+        "checklists": [
+            "leonardo-design-studio",
+            "launch-folder",
+            "printer-ready",
+            "standard",
+        ],
     },
     "infranview_print_x2": {
         "recording-key": "recording.infranview-print-x2",
         "inputs": ["image_path"],
         "outputs": [],
+        "checklists": [
+            "infran-view",
+            "launch-folder",
+            "printer-ready",
+            "infranview-test-print",
+            "standard",
+        ],
     },
     "infranview_print_x1": {
         "recording-key": "recording.infranview-print-x1",
         "inputs": ["image_path"],
         "outputs": [],
+        "checklists": [
+            "infran-view",
+            "launch-folder",
+            "printer-ready",
+            "infranview-test-print",
+            "standard",
+        ],
     },
 }
 PENDING_STATES = {"pending"}
