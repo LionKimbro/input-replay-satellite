@@ -156,8 +156,8 @@ def create_widgets(root):
     ttk.Label(controls, text="minutes").pack(side="left", padx=(0, 8))
     start_button = ttk.Button(controls, text="Start Pending Queue", command=start_queue)
     start_button.pack(side="left")
-    checklist_button = ttk.Button(controls, text="Preflight Checklist", command=show_preflight_checklist)
-    checklist_button.pack(side="left", padx=(8, 0))
+    cancel_button = ttk.Button(controls, text="Cancel Queue", command=cancel_queue)
+    cancel_button.pack(side="left", padx=(8, 0))
     clear_button = ttk.Button(controls, text="Clear Queue", command=clear_queue)
     clear_button.pack(side="left", padx=(8, 0))
     timer_var = tk.StringVar(value="No time limit")
@@ -191,7 +191,7 @@ def create_widgets(root):
         "minutes-entry": minutes_entry,
         "minutes-var": minutes_var,
         "start": start_button,
-        "checklist": checklist_button,
+        "cancel": cancel_button,
         "clear": clear_button,
         "timer-var": timer_var,
         "pending-var": pending_var,
@@ -641,7 +641,7 @@ def set_controls_enabled(enabled):
     state = "normal" if enabled else "disabled"
     g["widgets"]["minutes-entry"].configure(state=state)
     g["widgets"]["start"].configure(state=state)
-    g["widgets"]["checklist"].configure(state=state)
+    g["widgets"]["cancel"].configure(state=state)
     g["widgets"]["clear"].configure(state=state)
 
 
@@ -748,13 +748,14 @@ def clear_image_canvas(message=""):
 def create_context_menu(root):
     menu = tk.Menu(root, tearoff=0)
     menu.add_command(label="View Job", command=lambda: view_job(g["context-entry"]))
+    menu.add_command(label="Cancel Job", command=lambda: cancel_job(g["context-entry"]))
     menu.add_command(label="Delete Job", command=lambda: delete_job(g["context-entry"]))
     menu.add_command(label="Reload Job", command=lambda: reload_job(g["context-entry"]))
     g["widgets"]["context-menu"] = menu
 
 
 def handle_tree_double_click(_event):
-    view_job(get_selected_entry())
+    cancel_job(get_selected_entry())
 
 
 def handle_tree_right_click(event):
@@ -804,6 +805,20 @@ def delete_job(entry):
     set_status(f"Deleted local queue item: {entry['job-id']}")
 
 
+def cancel_job(entry):
+    if entry is None:
+        return
+    if g["running"]:
+        messagebox.showwarning("Input Replay Satellite", "The queue is running. Do not cancel queue items right now.")
+        return
+    if not core.is_pending_entry(entry):
+        messagebox.showinfo("Cancel Job", "This job is no longer pending and cannot be cancelled.")
+        return
+    core.cancel_pending_entries([entry])
+    refresh_queue()
+    set_status(f"Cancelled pending job: {entry['job-id']}")
+
+
 def reload_job(entry):
     if entry is None:
         return
@@ -841,6 +856,24 @@ def clear_queue():
     kept_count = sum(item["fate"] == "kept" for item in results)
     refresh_queue()
     set_status(f"Clear Queue deleted {deleted_count} local item(s), kept {kept_count} pending item(s).")
+
+
+def cancel_queue():
+    if g["running"]:
+        return
+    pending = [entry for entry in g["entries"] if entry["state"] == "pending"]
+    if not pending:
+        messagebox.showinfo("Cancel Queue", "There are no pending jobs to cancel.")
+        return
+    if not messagebox.askyesno(
+        "Cancel Queue",
+        f"Cancel {len(pending)} pending job(s)?\n\n"
+        "Each requester will receive a cancelled response. This cannot be undone.",
+    ):
+        return
+    core.cancel_pending_entries(pending)
+    refresh_queue()
+    set_status(f"Cancelled {len(pending)} pending job(s).")
 
 
 def plan_clear_queue(entries):
@@ -882,22 +915,6 @@ def open_path(variable):
         messagebox.showerror("Input Replay Satellite", f"Folder does not exist:\n{path}")
         return
     os.startfile(path)
-
-
-def show_preflight_checklist():
-    sync_runtime_paths()
-    pending = [entry for entry in g["entries"] if entry["state"] == "pending"]
-    if not pending:
-        messagebox.showinfo("Input Replay Satellite — preflight checklist", "There are no pending jobs.")
-        return
-    problems = core.validate_queue_preflight(pending, g["config"])
-    if problems:
-        messagebox.showerror(
-            "Input Replay Satellite — unsafe to launch",
-            "\n\n".join(problems),
-        )
-        return
-    show_preflight_checklist_dialog(pending, "review")
 
 
 def show_preflight_checklist_dialog(entries, mode):

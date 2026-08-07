@@ -94,6 +94,23 @@ def clear_non_pending_entries(entries):
     return results
 
 
+def cancel_pending_entries(entries):
+    """Cancel pending jobs and notify their requesters through terminal responses."""
+    results = []
+    for entry in entries:
+        if not is_pending_entry(entry):
+            continue
+        response = make_operator_failure(
+            entry["request"],
+            "Cancelled by the operator before playback began.",
+            status="cancelled",
+            kind="queue_cancelled",
+        )
+        complete_entry(entry, response)
+        results.append({"job-id": entry["job-id"], "state": "cancelled"})
+    return results
+
+
 def delete_queue_entry(entry):
     """Delete the satellite-owned inbox copy and terminal local record for one job."""
     source_path = entry.get("source-path")

@@ -256,6 +256,22 @@ def test_complete_entry_writes_response_and_terminal_record(tmp_path):
     assert record["state"] == "failed"
 
 
+def test_cancel_pending_entries_writes_cancelled_responses(tmp_path):
+    data = make_request(tmp_path)
+    request_path = tmp_path / "request.json"
+    request_path.write_text(json.dumps(data), encoding="utf-8")
+    entry = core.load_queue_entry(request_path, tmp_path / "runs")
+
+    results = core.cancel_pending_entries([entry])
+
+    response = core.read_json(entry["request"]["response_path"])
+    record = core.read_json(entry["record-path"])
+    assert results == [{"job-id": "job-test-001", "state": "cancelled"}]
+    assert response["status"] == "cancelled"
+    assert response["error"]["kind"] == "queue_cancelled"
+    assert record["state"] == "cancelled"
+
+
 def test_preflight_refuses_nonblank_launch_folder(tmp_path):
     entry = {
         "job-id": "job-test",

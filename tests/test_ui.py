@@ -134,6 +134,50 @@ def test_checklist_incompatibilities_do_not_depend_on_specific_checklist_names(m
     ]
 
 
+def test_cancel_queue_cancels_all_pending_entries_after_confirmation(monkeypatch):
+    pending = {"job-id": "pending", "state": "pending"}
+    terminal = {"job-id": "finished", "state": "complete"}
+    cancelled = []
+    statuses = []
+    ui.g["running"] = False
+    ui.g["entries"] = [pending, terminal]
+    monkeypatch.setattr(ui.messagebox, "askyesno", lambda *_args: True)
+    monkeypatch.setattr(ui.core, "cancel_pending_entries", lambda entries: cancelled.extend(entries))
+    monkeypatch.setattr(ui, "refresh_queue", lambda: None)
+    monkeypatch.setattr(ui, "set_status", statuses.append)
+
+    ui.cancel_queue()
+
+    assert cancelled == [pending]
+    assert statuses == ["Cancelled 1 pending job(s)."]
+
+
+def test_cancel_job_cancels_selected_pending_entry_without_confirmation(monkeypatch):
+    pending = {"job-id": "pending", "state": "pending"}
+    cancelled = []
+    statuses = []
+    ui.g["running"] = False
+    monkeypatch.setattr(ui.core, "cancel_pending_entries", lambda entries: cancelled.extend(entries))
+    monkeypatch.setattr(ui, "refresh_queue", lambda: None)
+    monkeypatch.setattr(ui, "set_status", statuses.append)
+
+    ui.cancel_job(pending)
+
+    assert cancelled == [pending]
+    assert statuses == ["Cancelled pending job: pending"]
+
+
+def test_double_click_cancels_the_selected_job(monkeypatch):
+    selected = {"job-id": "pending", "state": "pending"}
+    cancelled = []
+    monkeypatch.setattr(ui, "get_selected_entry", lambda: selected)
+    monkeypatch.setattr(ui, "cancel_job", cancelled.append)
+
+    ui.handle_tree_double_click(None)
+
+    assert cancelled == [selected]
+
+
 @pytest.mark.parametrize(
     ("job", "input_key"),
     [
